@@ -1,0 +1,65 @@
+#gameBorder {
+	padding-left: 0;
+	padding-right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	border: 1px solid white;
+	text-align: center;
+	display: inline-block;
+	float: middle;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+#leftImage {
+	display: inline-block;
+	float: middle;
+	overflow: hidden;
+	white-space: nowrap;
+}
+#rightImage {
+	display: inline-block;
+	float: middle;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.container {
+	min-width: 1525px; 
+}
+
+#title {
+	color: white;
+	text-align: center;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+body {
+	background-color: black;
+}
+
+#produced {
+	color: white;
+	text-align: center;
+	float: middle;
+}
+
+h4 {
+	color: white;
+	text-align: center;
+	float: middle;
+}
+
+h4 {
+	color: white;
+	text-align: center;
+	float: middle;
+}
+
+h4 {
+	color: white;
+	text-align: center;
+	float: middle;
+}

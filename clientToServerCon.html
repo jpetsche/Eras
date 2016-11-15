@@ -1,0 +1,35 @@
+<html>
+<head>
+    <title>Eras</title>
+    <div style="color:#0000FF">
+        <h3>message</h3>
+</head>
+<body>
+
+    <form action="server.js">
+        message: <input type="text" id="message"><br>
+        <button type="button" onclick="sendMessage()">click to send message</button
+    </form>
+    
+    <script>
+        //initiate the web socket connection
+        var ws = new WebSocket('ws://proj-309-gp-05.cs.iastate.edu:8080', 'echo-protocol');
+        var msg;
+
+        //send message to our web socket server
+        function sendMessage(){
+            var message = document.getElementById('message').value;
+            ws.send(JSON.stringify(message));
+        }
+
+        //listen for server response
+        ws.addEventListener("message", function(e) {
+            //the data is the message we're sending back
+            msg = e.data;
+            //append the message
+            window.alert(msg);
+        });
+
+    </script>
+</body>
+</html>

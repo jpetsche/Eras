@@ -6,6 +6,7 @@
 var server = require('./server.js');
 
 //private module methods
+//method to create obstruction objects
 function obstruction(xc, yc, width, height, type, dir)
 {
     this.x = xc;
@@ -20,7 +21,7 @@ function obstruction(xc, yc, width, height, type, dir)
     this.direction = dir;
 }
 
-//module inclusion declaration
+//module inclusion declaration for obstructions
 module.exports = {
 	populateObstructions: //function the populates the map with obstructions
 		function populateObstructions(obstObj)
@@ -29,9 +30,6 @@ module.exports = {
 		    var amount = Math.floor((Math.random() * 15) + 5);
 		    for(var i = 1; i <= amount; i++)
 		    {
-		        //create the obstruction, titled thing
-		        var xc = Math.floor((Math.random() * 700) + 50);
-		        var yc = Math.floor((Math.random() * 500) + 50);
 		        //var type = Math.floor((Math.random() * 6) + 1);
 		        var type = 3; //set as boulder, just for testing
 		        var dir = 0;
@@ -85,6 +83,56 @@ module.exports = {
 		                height = 150;                
 		            }
 		        }
+
+		        //create the obstruction, titled thing
+		        var xc;
+		        var yc;
+		        var issue = 0;
+		        while(issue != -1)
+		        {
+		        	issue = 0;
+		        	xc = Math.floor((Math.random() * 700) + 50);
+		        	for(var a = 1; a <= 15; a++)
+		        	{
+		        		// if(obstObj[a] != null)
+		        		// {
+		        		// 	if(xc <= obstObj[a].x + obstObj[a].width
+		        		// 		&& xc + width >= obstObj[a].x)
+		        		// 	{
+		        		// 		if()
+		        		// 		issue = 1;
+		        		// 	}
+		        		// }
+		        	}
+		        	if(issue == 0)
+		        	{
+		        		break;
+		        	}
+		        	//console.log("looping in obst x coord");
+		        }
+
+		        while(issue != -1)
+		        {
+		        	issue = 0;
+		        	yc = Math.floor((Math.random() * 500) + 50);
+		        	for(var a = 1; a <= 15; a++)
+		        	{
+		        		// if(obstObj[a] != null)
+		        		// {
+		        		// 	if(yc <= obstObj[a].y + obstObj[a].height
+		        		// 		&& yc + height >= obstObj[a].y)
+		        		// 	{
+		        		// 		issue = 1;
+		        		// 	}
+		        		// }
+		        	}
+		        	if(issue == 0)
+		        	{
+		        		break;
+		        	}
+		        	//console.log("looping in obst x coord");
+		        }
+
 		        var thing = new obstruction(xc, yc, width, height, type, dir);
 		        obstObj[i] = thing;
 		    }

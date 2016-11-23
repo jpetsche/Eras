@@ -2,9 +2,9 @@
 *--------------------Initialize js files------------------------
 ***************************************************************/
 var col = require('./collision.js');
-console.log('loaded the collision.js file');
 var obst = require('./obstruction.js');
-console.log('loaded the obstruction.js file');
+var pro = require('./projectile.js');
+var sc = require('./scores.js');
 /***************************************************************
 *---------------------INITIALIZE SERVER-------------------------
 ***************************************************************/
@@ -39,7 +39,7 @@ itemObj[0] = "items";
 highScores[0] = "highScores";
 obstObj[0] = "obstructions";
 var gameTimer = 0;
-obst.populateObstructions();
+obst.populateObstructions(obstObj);
 
 //object to send through websockets so we are able
 //to tell the difference between the player array,
@@ -138,18 +138,6 @@ var player4 = {
     score: 0
 }
 
-//projectile for ranged attacks
-function projectile(num) {
-    this.x = 0;
-    this.y = 0;
-    this.width = 20;
-    this.height = 20;
-    this.moving = "right";
-    this.damage = 1;
-    this.destroyed = 0;
-    this.launchedBy = 0;
-}
-
 //movement object to be sent to clients
 var moveObj = {
     player:0,
@@ -174,219 +162,9 @@ function playerRespawn(object){
   }
 }
 
-//function that creates and shoots the projectile
-function shootProj(player) {
-    for(var i = 1; i < 100; i++)
-    {
-        if(projObj[i] == null)
-        {
-            var proj = new projectile(i);
-            projObj[i] = proj;
-            projObj[i].moving = player.facing;
-            projObj[i].damage = 1;
-            projObj[i].launchedBy = player.charNum;
-            if(projObj[i].moving == "left")
-            {
-                projObj[i].x = player.x - 20;
-                projObj[i].y = player.y + 15;
-            }
-            else if(proj.moving == "right")
-            {
-                projObj[i].x = player.x + 50;
-                projObj[i].y = player.y + 15;
-            }
-            else if(proj.moving == "up")
-            {
-                projObj[i].x = player.x + 15;
-                projObj[i].y = player.y - 20;
-            }
-            else//projectile.moving is down
-            {
-                projObj[i].x = player.x + 15;
-                projObj[i].y = player.y + 50;
-            }
-            projObj[i].damage = 1;
-            projObj[i].destroyed = 0;
-            break;
-        }
-    }
-}
-
-//function that updates all of the projectiles
-function updateProj(){
-    for(var i = 1; i < 100; i++)
-    {
-        if(projObj[i] != null)
-        {
-            var hit = col.projCol(projObj[i], playerObj);
-
-            if(projObj[i].moving == "left")
-            {
-                if(hit == -1)
-                {
-                    projObj[i].x = projObj[i].x - 5;
-                }
-                else if(hit == 5)
-                {
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-                else
-                {
-                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
-                    if(playerObj[hit].health > 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 10;
-                        }
-                    }
-                    else if(playerObj[hit].health == 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 50;
-                        }
-                        setHighScores(playerObj[hit]);
-                    }
-                    for(var a = 1; a <= 4; a++)
-                    {
-                        if(clients[a] != null)
-                        {
-                            clients[a].sendUTF(JSON.stringify(playerObj));
-                        }
-                    }
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-            }
-            else if(projObj[i].moving == "right")
-            {
-                if(hit == -1)
-                {
-                    projObj[i].x = projObj[i].x + 5;
-                }
-                else if(hit == 5)
-                {
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-                else
-                {
-                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
-                    if(playerObj[hit].health > 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 10;
-                        }
-                    }
-                    else if(playerObj[hit].health == 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 50;
-                        }
-                        setHighScores(playerObj[hit]);
-                    }
-                    for(var a = 1; a <= 4; a++)
-                    {
-                        if(clients[a] != null)
-                        {
-                            clients[a].sendUTF(JSON.stringify(playerObj));
-                        }
-                    }
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-            }
-            else if(projObj[i].moving == "up")
-            {
-                if(hit == -1)
-                {
-                    projObj[i].y = projObj[i].y - 5;
-                }
-                else if(hit == 5)
-                {
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-                else
-                {
-                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
-                    if(playerObj[hit].health > 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 10;
-                        }
-                    }
-                    else if(playerObj[hit].health == 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 50;
-                        }
-                        setHighScores(playerObj[hit]);
-                    }
-                    for(var a = 1; a <= 4; a++)
-                    {
-                        if(clients[a] != null)
-                        {
-                            clients[a].sendUTF(JSON.stringify(playerObj));
-                        }
-                    }
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-            }
-            else//projectile.moving is down
-            {
-                if(hit == -1)
-                {
-                    projObj[i].y = projObj[i].y + 5;
-                }
-                else if(hit == 5)
-                {
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-                else
-                {
-                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
-                    if(playerObj[hit].health > 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 10;
-                        }
-                    }
-                    else if(playerObj[hit].health == 0)
-                    {
-                        if(playerObj[projObj[i].launchedBy].health > 0)
-                        {
-                            playerObj[projObj[i].launchedBy].score = playerObj[projObj[i].launchedBy].score + 50;
-                        }
-                        setHighScores(playerObj[hit]);
-                    }
-                    for(var a = 1; a <= 4; a++)
-                    {
-                        if(clients[a] != null)
-                        {
-                            clients[a].sendUTF(JSON.stringify(playerObj));
-                        }
-                    }
-                    projObj[i].destroyed = 1;
-                    projObj[i] = null;
-                }
-            }
-        }
-    }
-}
-
 //timed method call that updates projectiles every 1/10th of a second
 setInterval(function(){
-    updateProj();
+    pro.updateProj(projObj, playerObj, highScores, clients);
 
     for(var i = 1; i <= 4; i++)
     {
@@ -410,43 +188,6 @@ setInterval(function(){
     }
 
 }, 100);
-
-//method that sets highscores
-function setHighScores(person)
-{
-    console.log("high Score called by " + person.name);
-    if(person.score > highScores[1].score)
-    {
-        //move old scores down
-        highScores[3].score = highScores[2].score;
-        highScores[3].name = highScores[2].name;
-        highScores[2].score = highScores[1].score;
-        highScores[2].name = highScores[1].name;
-        highScores[1].score = person.score;
-        highScores[1].name = person.name;
-    }
-    else if(person.score > highScores[2].score)
-    {
-        //move old scores down
-        highScores[3].score = highScores[2].score;
-        highScores[3].name = highScores[2].name;
-        highScores[2].score = person.score;
-        highScores[2].name = person.name;
-    }
-    else if(person.score > highScores[3].score)
-    {
-        highScores[3].score = person.score;
-        highScores[3].name = person.name;
-    }
-
-    for(var c = 1; c <= 4; c++)
-    {
-        if(clients[c] != null)
-        {
-            clients[c].sendUTF(JSON.stringify(highScores));
-        }
-    }
-}
 
 /***************************************************************
 *---------------------HANDLE CONNECTIONS------------------------
@@ -609,7 +350,7 @@ wsServer.on('request', function(r){
                     playerObj[msgData.player].attack = 1;
                     playerObj[msgData.player].canAttack = 1;
                     playerObj[msgData.player].attackFrame = gameTimer;
-                    shootProj(playerObj[msgData.player]);
+                    pro.shootProj(playerObj[msgData.player], projObj);
                 }
             }
             else if(msgData.key == "equip" && playerObj[msgData.player].health > 0){

@@ -1,5 +1,6 @@
 var app = angular.module("main", ["ngRoute"]);
 
+//configures the ng-app "main" so that when the url has /game at the end the game is loaded onto the screen
 app.config(function($routeProvider) {
     $routeProvider.when("/", {
         templateUrl: "login.html",
@@ -9,6 +10,8 @@ app.config(function($routeProvider) {
 		templateUrl: "test.html"
 	})
 });
+
+//when the button is pressed /game is added to the url
 app.controller("loginController", function($scope, $location){
 	$scope.login = function(){
 		if(submitMe())

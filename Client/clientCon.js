@@ -97,8 +97,9 @@ ws.addEventListener("message", function(e) {
             }
             drawFromServer();
         }
-        else if(msg[0] == "obstructions");
+        else if(msg[0] == "obstructions")
         {
+            console.log(msg);
             for(var i = 1; i <= 15; i++)
             {
                 obstObj[i] = msg[i];

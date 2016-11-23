@@ -1,4 +1,11 @@
 /***************************************************************
+*--------------------Initialize js files------------------------
+***************************************************************/
+var col = require('./collision.js');
+console.log('loaded the collision.js file');
+var obst = require('./obstruction.js');
+console.log('loaded the obstruction.js file');
+/***************************************************************
 *---------------------INITIALIZE SERVER-------------------------
 ***************************************************************/
 
@@ -15,24 +22,24 @@ wsServer = new WebSocketServer({
     httpServer: server
 });
 
+var obstObj = {};
+var highScores = {};
+var itemObj = {};
+var projObj = {};
+var playerObj = {};
 //store connected clients
 var count = 0;
 var clients = {};
 var id;
 var closedCon = null;
-var playerObj = {};
-var projObj = {};
 var range = 15;
-var itemObj = {};
-var highScores = {};
 playerObj[0] = "players";
 projObj[0] = "projectiles";
 itemObj[0] = "items";
 highScores[0] = "highScores";
-var obstObj = {};
 obstObj[0] = "obstructions";
 var gameTimer = 0;
-populateObstructions();
+obst.populateObstructions();
 
 //object to send through websockets so we are able
 //to tell the difference between the player array,
@@ -131,21 +138,6 @@ var player4 = {
     score: 0
 }
 
-//function for obstruction objects
-function obstruction(xc, yc, width, height, type, dir)
-{
-    this.x = xc;
-    this.y = yc;
-    this.width = width;
-    this.height = height;
-    //to determine what image the obstruction will be
-    //i.e., rock, tree, wall, water
-    this.type = type;
-    this.passable = 0;
-    this.slow = 0;
-    this.direction = dir;
-}
-
 //projectile for ranged attacks
 function projectile(num) {
     this.x = 0;
@@ -162,282 +154,6 @@ function projectile(num) {
 var moveObj = {
     player:0,
     key:0
-}
-
-//function the populates the map with obstructions
-function populateObstructions()
-{
-    //determine how many obstructions will be on the map
-    var amount = Math.floor((Math.random() * 15) + 5);
-
-    for(var i = 1; i <= amount; i++)
-    {
-        //create the obstruction, titled thing
-        var xc = Math.floor((Math.random() * 700) + 50);
-        var yc = Math.floor((Math.random() * 500) + 50);
-        var type = Math.floor((Math.random() * 6) + 1);
-        var dir = 0;
-        var width;
-        var height;
-        if(type == 1)
-        {
-            type = "tree";
-            width = 50;
-            height = 50;
-        }
-        else if(type == 2)
-        {
-            type = "rock";
-            width = 20;
-            height = 20;
-        }
-        else if(type == 3)
-        {
-            type = "boulder";
-            width = 75;
-            height = 75;
-        }
-        else if(type == 4)
-        {
-            type = "water";
-            width = 50;
-            height = 50;
-        }
-        else if(type == 5)
-        {
-            type = "mud";
-            width = 50;
-            height = 50;
-        }
-        else
-        {
-            //pick the direction of the wall
-            dir = Math.floor((Math.random() * 2) + 1);
-            type = "wall";
-            if(dir == 1)
-            {
-                //left to right
-                width = 150;
-                height = 20;
-            }
-            else
-            {
-                //up and down
-                width = 20;
-                height = 150;                
-            }
-        }
-        var thing = new obstruction(xc, yc, width, height, type, dir);
-        obstObj[i] = thing;
-    }
-}
-
-//collision detection function
-function wallCollision(object, direction)
-{
-    var hit = 0;
-    if(direction == "left")
-    {
-        if(object.x - 1 <= 9)
-        {
-            hit = 1;
-        }
-    }
-    else if(direction == "right")
-    {
-        if(object.x + 50 >= 791)
-        {
-            hit = 1;
-        }
-    }
-    else if(direction == "up")
-    {
-        if(object.y - 1 <= 9)
-        {
-            hit = 1;
-        }
-    }
-    else //direction == down
-    {
-        if(object.y + 50 >= 591)
-        {
-            hit = 1;
-        }
-    }
-
-    return hit;
-}
-
-//collision detection function for other players
-function playerCollision(object, direction)
-{
-    var hit = 0;
-
-    for(var i = 1; i <= 4; i++)
-    {
-        if(playerObj[i] != null)
-        {
-            if(direction == "left")
-            {
-                if(object.x - 1 <= playerObj[i].x + 49 && object.x - 1 >= playerObj[i].x)
-                {
-                    if(object.y <= playerObj[i].y + 49 && object.y >= playerObj[i].y - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = 1;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if(direction == "right")
-            {
-                if(object.x + 50 >= playerObj[i].x && object.x + 50 <= playerObj[i].x + 49)
-                {
-                    if(object.y <= playerObj[i].y + 49 && object.y >= playerObj[i].y - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = 1;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if(direction == "up")
-            {
-                if(object.y - 1 <= playerObj[i].y + 49 && object.y - 1 >= playerObj[i].y)
-                {
-                    if(object.x <= playerObj[i].x + 49 && object.x >= playerObj[i].x - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = 1;
-                            break;
-                        }
-                    }
-                }
-            }
-            else //direction == down
-            {
-                if(object.y + 50 >= playerObj[i].y && object.y + 50 <= playerObj[i].y + 49)
-                {
-                    if(object.x <= playerObj[i].x + 49 && object.x >= playerObj[i].x - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = 1;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return hit;
-}
-
-//collision detection function for the attack command
-function attackCollision(object)
-{
-    //for var hit, -1 is a miss
-    //0 hits player 0, 1 hits player 1,
-    //2 hits player 2, 3 hits player 3
-    var hit = -1;
-
-    for(var i = 1; i <= 4; i++)
-    {
-        if(playerObj[i] != null)
-        {
-            if(object.facing == "left")
-            {
-                if(object.x - 21 <= playerObj[i].x + 49 && object.x - 21 >= playerObj[i].x)
-                {
-                    if(object.y <= playerObj[i].y + 49 && object.y >= playerObj[i].y - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = i;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if(object.facing == "right")
-            {
-                if(object.x + 70 >= playerObj[i].x && object.x + 70 <= playerObj[i].x + 49)
-                {
-                    if(object.y <= playerObj[i].y + 49 && object.y >= playerObj[i].y - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = i;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if(object.facing == "up")
-            {
-                if(object.y - 21 <= playerObj[i].y + 49 && object.y - 21 >= playerObj[i].y)
-                {
-                    if(object.x <= playerObj[i].x + 49 && object.x >= playerObj[i].x - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = i;
-                            break;
-                        }
-                    }
-                }
-            }
-            else //direction == down
-            {
-                if(object.y + 70 >= playerObj[i].y && object.y + 70 <= playerObj[i].y + 49)
-                {
-                    if(object.x <= playerObj[i].x + 49 && object.x >= playerObj[i].x - 48)
-                    {
-                        if(playerObj[i].health > 0)
-                        {
-                            hit = i;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return hit;
-}
-
-function itemCollision(object, item){
-  var hit = 0;
-  var itemX = item.getX();
-  var itemY = item.getY();
-  var itemSize = item.getSize()-1;
-
-  if(object.facing == "left"){
-    if(object.x -1 <= itemX + itemSize && object.x -1 >= itemX){
-
-    }
-  }
-
-  else if(object.facing == "right"){
-    if(object.x +50 <= itemX + itemSize && object.x +50 >= itemX){
-
-    }
-  }
-
-  else if(object.facing == "up"){
-
-
-  }
-
-  else {
-
-  }
 }
 
 //Respawns a player that has died
@@ -502,7 +218,7 @@ function updateProj(){
     {
         if(projObj[i] != null)
         {
-            var hit = projCol(projObj[i]);
+            var hit = col.projCol(projObj[i], playerObj);
 
             if(projObj[i].moving == "left")
             {
@@ -668,98 +384,6 @@ function updateProj(){
     }
 }
 
-//function that detects collision for the projectiles
-function projCol(bullet)
-{
-    //-1 is a miss
-    //1,2,3,4 are hits on the respective player
-    //5 is when it reaches the edge of the arena
-    var hit = -1;
-    for(var i = 1; i <= 4; i++)
-    {
-        if(playerObj[i] != null)
-        {
-            if(bullet.moving == "left")
-            {
-                if(bullet.x - 5 <= playerObj[i].x + 49 && bullet.x - 5 >= playerObj[i].x)
-                {
-                    if(bullet.y <= playerObj[i].y + 49 && bullet.y >= playerObj[i].y)
-                    {
-                        if(bullet.launchedBy != i && playerObj[i].health > 0 && bullet.destroyed == 0)
-                        {
-                            hit = i;
-                            bullet.destroyed = 1;
-                            break;
-                        }
-                    }
-                }
-                else if(bullet.x - 5 <= 0)
-                {
-                    hit = 5;
-                }
-            }
-            else if(bullet.moving == "right")
-            {
-                if(bullet.x + 5 >= playerObj[i].x && bullet.x + 5 <= playerObj[i].x + 49)
-                {
-                    if(bullet.y <= playerObj[i].y + 49 && bullet.y >= playerObj[i].y)
-                    {
-                        if(bullet.launchedBy != i && playerObj[i].health > 0 && bullet.destroyed == 0)
-                        {
-                            hit = i;
-                            bullet.destroyed = 1;
-                            break;
-                        }
-                    }
-                }
-                else if(bullet.x + 5 >= 800)
-                {
-                    hit = 5;
-                }
-            }
-            else if(bullet.moving == "up")
-            {
-                if(bullet.x <= playerObj[i].x + 49 && bullet.x >= playerObj[i].x)
-                {
-                    if(bullet.y - 5 <= playerObj[i].y + 49 && bullet.y - 5 >= playerObj[i].y)
-                    {
-                        if(bullet.launchedBy != i && playerObj[i].health > 0 && bullet.destroyed == 0)
-                        {
-                            hit = i;
-                            bullet.destroyed = 1;
-                            break;
-                        }
-                    }
-                }
-                else if(bullet.y - 5 <= 0)
-                {
-                    hit = 5;
-                }
-            }
-            else //bullet.moving is down
-            {
-                if(bullet.x <= playerObj[i].x + 49 && bullet.x >= playerObj[i].x)
-                {
-                    if(bullet.y + 5 <= playerObj[i].y + 49 && bullet.y + 5 >= playerObj[i].y)
-                    {
-                        if(bullet.launchedBy != i && playerObj[i].health > 0 && bullet.destroyed == 0)
-                        {
-                            hit = i;
-                            bullet.destroyed = 1;
-                            break;
-                        }
-                    }
-                }
-                else if(bullet.y + 5 >= 600)
-                {
-                    hit = 5;
-                }
-            }
-        }
-    }
-    return hit;
-}
-
 //timed method call that updates projectiles every 1/10th of a second
 setInterval(function(){
     updateProj();
@@ -768,6 +392,7 @@ setInterval(function(){
     {
         if(clients[i] != null)
         {
+            //add attack speed of one second
             if(playerObj[i].canAttack == 1 && playerObj[i].attackFrame <= 10)
             {
                 if(playerObj[i].attackFrame == 10)
@@ -921,8 +546,8 @@ wsServer.on('request', function(r){
             {
                 playerObj[msgData.player].attack = 0;
                 //check for collisions before making the move
-                hitWall = wallCollision(playerObj[msgData.player], msgData.key);
-                hitPlayer = playerCollision(playerObj[msgData.player], msgData.key);
+                hitWall = col.wallCollision(playerObj[msgData.player], msgData.key, obstObj);
+                hitPlayer = col.playerCollision(playerObj[msgData.player], msgData.key, playerObj);
 
                 if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
                 {
@@ -934,8 +559,8 @@ wsServer.on('request', function(r){
             {
                 playerObj[msgData.player].attack = 0;
                 //check for collisions before making the move
-                hitWall = wallCollision(playerObj[msgData.player], msgData.key);
-                hitPlayer = playerCollision(playerObj[msgData.player], msgData.key);
+                hitWall = col.wallCollision(playerObj[msgData.player], msgData.key, obstObj);
+                hitPlayer = col.playerCollision(playerObj[msgData.player], msgData.key, playerObj);
 
                 if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
                 {
@@ -947,8 +572,8 @@ wsServer.on('request', function(r){
             {
                 playerObj[msgData.player].attack = 0;
                 //check for collisions before making the move
-                hitWall = wallCollision(playerObj[msgData.player], msgData.key);
-                hitPlayer = playerCollision(playerObj[msgData.player], msgData.key);
+                hitWall = col.wallCollision(playerObj[msgData.player], msgData.key, obstObj);
+                hitPlayer = col.playerCollision(playerObj[msgData.player], msgData.key, playerObj);
 
                 if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
                 {
@@ -960,8 +585,8 @@ wsServer.on('request', function(r){
             {
                 playerObj[msgData.player].attack = 0;
                 //check for collisions before making the move
-                hitWall = wallCollision(playerObj[msgData.player], msgData.key);
-                hitPlayer = playerCollision(playerObj[msgData.player], msgData.key);
+                hitWall = col.wallCollision(playerObj[msgData.player], msgData.key, obstObj);
+                hitPlayer = col.playerCollision(playerObj[msgData.player], msgData.key, playerObj);
 
                 if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
                 {
@@ -973,6 +598,7 @@ wsServer.on('request', function(r){
 			{
                 //handle a player disconnecting
 				console.log("hes outa here");
+                playerRespawn(playerObj[msgData.player]);
 				playerObj[msgData.player] = null;
                 clients[msgData.player] = null;
 			}

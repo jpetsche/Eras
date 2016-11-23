@@ -87,6 +87,8 @@ var die6 = new Image();
 die6.src = "images/sprites/die-6.png";
 var expl = new Image();
 expl.src = "images/expl_02_0015.png";
+var boulder = new Image();
+boulder.src = "images/boulder.png";
 
 
 /***************************************************************
@@ -110,43 +112,39 @@ function drawObstructions(context, thing)
 {
   context.beginPath();
   context.rect(thing.x, thing.y, thing.width, thing.height);
-  var thingImage;
 
   //set the correct image for what is being drawn
   if(thing.type == "tree")
   {
-    thingImage = tree;
+    context.drawImage(tree, thing.x, thing.y, thing.width, thing.height);
   }
   else if(thing.type == "rock")
   {
-    thingImage = rock;
+    context.drawImage(rock, thing.x, thing.y, thing.width, thing.height);
   }
   else if(thing.type == "boulder")
   {
-    thingImage = boulder;
+    context.drawImage(boulder, thing.x, thing.y, thing.width, thing.height);
   }
   else if(thing.type == "water")
   {
-    thingImage = water;
+    context.drawImage(water, thing.x, thing.y, thing.width, thing.height);
   }
   else if(thing.type == "mud")
   {
-    thingImage = mud;
+    context.drawImage(mud, thing.x, thing.y, thing.width, thing.height);
   }
   else if(thing.type == "wall")
   {
     if(thing.direction == 0)
     {
-      thingImage = downWall;
+      context.drawImage(wall0, thing.x, thing.y, thing.width, thing.height);
     }
     else
     {
-      thingImage = sideWall;
+      context.drawImage(wall1, thing.x, thing.y, thing.width, thing.height);
     }
   }
-
-  //now draw the image
-  context.drawImage(thingImage, thing.x, thing.y, thing.width, thing.height);
 }
 
 //draw gameover image
@@ -364,16 +362,6 @@ function drawFromServer() {
   //draw the grass background
   drawBack(ctx[0]);
 
-  //draw the obstructions
-  for(var i = 1; i <= 15; i++)
-  {
-    if(obstObj[i] != null)
-    {
-      var curObstr = obstObj[i];
-      drawObstructions(ctx[0], curObstr);
-    }
-  }
-
 	//draws the new player in its new position
   for(var i = 1; i <= 4; i++)
   {
@@ -381,6 +369,16 @@ function drawFromServer() {
     {
       var curPlayer = playerObj[i];
       drawRect(curPlayer, ctx[0], playerId);
+    }
+  }
+  
+  //draw the obstructions
+  for(var i = 1; i <= 15; i++)
+  {
+    if(obstObj[i] != null)
+    {
+      var curObstr = obstObj[i];
+      drawObstructions(ctx[0], curObstr);
     }
   }
 

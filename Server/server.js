@@ -5,6 +5,7 @@ var col = require('./collision.js');
 var obst = require('./obstruction.js');
 var pro = require('./projectile.js');
 var sc = require('./scores.js');
+var chat = require('./chat.js');
 /***************************************************************
 *---------------------INITIALIZE SERVER-------------------------
 ***************************************************************/
@@ -22,6 +23,7 @@ wsServer = new WebSocketServer({
     httpServer: server
 });
 
+var chatObj = {};
 var obstObj = {};
 var highScores = {};
 var itemObj = {};
@@ -33,6 +35,7 @@ var clients = {};
 var id;
 var closedCon = null;
 var range = 15;
+chatObj[0] = "chatLog";
 playerObj[0] = "players";
 projObj[0] = "projectiles";
 itemObj[0] = "items";
@@ -47,6 +50,12 @@ obst.populateObstructions(obstObj);
 var sendObj = {
     objName: "players",
     object: JSON.stringify(projObj)
+}
+
+var chatMsg = {
+    key: "chat",
+    msg: "",
+    user: "Player 1"
 }
 
 var high1 = {
@@ -164,7 +173,7 @@ function playerRespawn(object){
 
 //timed method call that updates projectiles every 1/10th of a second
 setInterval(function(){
-    pro.updateProj(projObj, playerObj, highScores, clients);
+    pro.updateProj(projObj, playerObj, highScores, clients, obstObj);
 
     for(var i = 1; i <= 4; i++)
     {
@@ -240,6 +249,7 @@ wsServer.on('request', function(r){
                 clients[i].sendUTF(JSON.stringify(projObj));
                 clients[i].sendUTF(JSON.stringify(highScores));
                 clients[i].sendUTF(JSON.stringify(obstObj));
+                clients[i].sendUTF(JSON.stringify(chatObj));
             }
         }
 
@@ -281,6 +291,19 @@ wsServer.on('request', function(r){
             //checks if respawn request was sent
             if(msgData.key == "respawn" && playerObj[msgData.player].health < 1){
               playerRespawn(playerObj[msgData.player]);
+            }
+            //checks if chat message was sent
+            else if(msgData.key == "chat")
+            {
+                chatMsg = msgData;
+                chat.update(chatMsg, chatObj);
+                for(var i = 1; i <= 4; i++)
+                {
+                    if(clients[i] != null)
+                    {
+                        clients[i].send(JSON.stringify(chatObj));
+                    }
+                }
             }
             //checks if movemnt request was sent
             else if(msgData.key == "left" && playerObj[msgData.player].health > 0)
@@ -350,7 +373,7 @@ wsServer.on('request', function(r){
                     playerObj[msgData.player].attack = 1;
                     playerObj[msgData.player].canAttack = 1;
                     playerObj[msgData.player].attackFrame = gameTimer;
-                    pro.shootProj(playerObj[msgData.player], projObj);
+                    pro.shootProj(playerObj[msgData.player], projObj, clients);
                 }
             }
             else if(msgData.key == "equip" && playerObj[msgData.player].health > 0){

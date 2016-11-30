@@ -25,8 +25,74 @@
 	white-space: nowrap;
 }
 
+#wrapper, #loginform {
+	margin: 0 auto;
+	padding-bottom: 25px;
+	background: #EBF4FB;
+	width: 350px;
+	height: 625px;
+	border: 1px solid #ACD8F0;
+}
+
+#loginform {
+	padding-top: 18px;
+}
+
+#loginform p {
+	margin: 5px;
+}
+
+#chatbox {
+	text-align: left;
+	margin: 0 auto;
+	margin-bottom: 25px;
+	padding: 10px;
+	background: #fff;
+	height: 450px;
+	width: 280px;
+	border: 1px solid #ACD8F0;
+	overflow: auto;
+}
+
+#usermsg {
+	width: 252px;
+	border: 1px solid #ACD8F0;
+	margin-left: 24px;
+}
+
+#submit {
+	width: 60px;
+}
+
+.error {
+	color: #ff0000;
+}
+
+#menu {
+	padding: 12.5px 25px 12.5px 25px;
+}
+
+.welcome {
+	float: left;
+}
+
+.msgln {
+	margin: 0 0 2px 0;
+}
+
 .container {
 	min-width: 1525px; 
+}
+
+#container {
+	width: 1525px;
+	margin: 0 auto;
+}
+
+#leftImage, #gameBorder, #wrapper {
+	border: 1px solid white;
+	float: left;
+	min-height: 450px;
 }
 
 #title {

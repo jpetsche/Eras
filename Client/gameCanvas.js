@@ -5,22 +5,28 @@
 ***************************************************************/
 
 //For each animation frame, we can update the elements on the canvas, clear the canvas, redraw the canvas, and then request another animation frame
-window.requestAnimFrame = (function(callback) {
-        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-        function(callback) {
-          window.setTimeout(callback, 1000 / 60);
-        };
-      })();
+// window.requestAnimFrame = (function(callback) {
+//         return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+//         function(callback) {
+//           window.setTimeout(callback, 1000 / 60);
+//         };
+//       })();
+
+//disabling form reset when enter is pressed
+$(function() {
+  $("form").submit(function() {return false;});
+});
 
 //holds value of keyDown
 var keymap = {32: false, 37: false, 38: false, 39: false, 40: false,
-  65: false, 68: false, 82: false, 83: false, 87: false};
+  65: false, 68: false, 82: false, 83: false, 87: false, 13: false};
 
 var numPlayers = 0;
 var playerObj = {};
-var playerId = 1;
+var playerId;
 var projObj = {};
 var obstObj = {};
+var chatObj = {};
 
 var canvas = document.getElementById("gameBorder");
 var ctx = {};
@@ -66,42 +72,73 @@ highScores[1] = high1;
 highScores[2] = high2;
 highScores[3] = high3;
 
-//load all images
-var walkleft1 = new Image();
-walkleft1.src = "images/sprites/walk-left-1.png";
-var walkright1 = new Image();
-walkright1.src = "images/sprites/walk-right-1.png";
-var walkup1 = new Image();
-walkup1.src = "images/sprites/walk-up-1.png";
-var walkdown1 = new Image();
-walkdown1.src = "images/sprites/walk-down-1.png";
-var attackleft5 = new Image();
-attackleft5.src = "images/sprites/attack-left-5.png";
-var attackright5 = new Image();
-attackright5.src = "images/sprites/attack-right-5.png";
-var attackup5 = new Image();
-attackup5.src = "images/sprites/attack-up-5.png";
-var attackdown5 = new Image();
-attackdown5.src = "images/sprites/attack-down-5.png";
-var die6 = new Image();
-die6.src = "images/sprites/die-6.png";
-var expl = new Image();
-expl.src = "images/expl_02_0015.png";
-var boulder = new Image();
-boulder.src = "images/boulder.png";
+/***************************************************************
+*----------------------Chatlog Sending--------------------------
+***************************************************************/
+document.getElementById("submitmsg").onclick = function() {
+  chatLog(document.getElementById("usermsg").value)
+};
 
+function chatLog(message)
+{
+  sendMessage(message, playerObj[playerId].name);
+  document.getElementById("usermsg").value = "";
+}
 
+function writeLog(chatObj)
+{
+  var count = 1;
+  var curMsg = chatObj[1];
+  var element;
+  while(count <= 20)
+  {
+    if(chatObj[curMsg] != null)
+    {
+      element = document.getElementById("log"+count);
+      element.innerHTML = chatObj[curMsg].user + ": " + chatObj[curMsg].msg;      
+    }
+    else
+    {
+      element = document.getElementById("log"+count);
+      element.innerHTML = "";
+    }
+
+    if(curMsg == 2)
+    {
+      curMsg = 51;
+    }
+    else
+    {
+      curMsg--;
+    }
+    count++;
+  }
+}
 /***************************************************************
 *-----------------------CANVAS DRAWING--------------------------
 ***************************************************************/
+
+//function that plays attack audio
+function playAttack()
+{
+  shootfireball.currentTime = 0;
+  shootfireball.play();
+}
+
+//function that plays hit audio
+function playHit()
+{
+  fireballhit.currentTime = 0;
+  fireballhit.play();
+}
 
 //draw background
 function drawBack(context)
 {
   context.beginPath();
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.clearRect(0, 0, canvas.width, canvas.height - 50);
   var pat = context.createPattern(grass, "repeat");
-  context.rect(0, 0, canvas.width, canvas.height);
+  context.rect(0, 0, canvas.width, canvas.height - 50);
   context.fillStyle = pat;
   context.fill();
 }
@@ -153,7 +190,13 @@ function drawGameOver(context)
   //draw the GAMEOVER image
   context.beginPath();
   context.rect(200, 200, 400, 200);
-  context.drawImage(gameover, 200, 200);
+  context.drawImage(gameover, 200, 200, 400, 200);
+
+  //draw background box so you can see game scores
+  context.beginPath();
+  context.rect(280, 320, 230, 240);
+  context.fillStyle = 'grey';
+  context.fill();
 
   //draw your score
   context.beginPath();
@@ -288,8 +331,56 @@ function healthBar(rect, context, id)
 
 }
 
+//function to draw the player UI at the bottom of the canvas
+function drawUI(context)
+{
+  //draw UI box at bottom of canvas
+  context.beginPath();
+  context.rect(0, 600, 800, 50);
+  context.fillStyle = 'white';
+  context.fill();
+  
+  //draw character image
+  context.beginPath();
+  context.rect(10, 600, 50, 50);
+  context.drawImage(walkdown1, 10, 600, 50, 50);
+
+  //draw user health
+  context.beginPath();
+  context.rect(70, 610, 100, 30);
+  context.fillStyle = 'red';
+  context.fill();
+  context.beginPath();
+  context.rect(70, 610, playerObj[playerId].health*20, 30);
+  context.fillStyle = 'green';
+  context.fill();
+  context.beginPath();
+  context.rect(70, 630, 100, 30);
+  context.fillStyle = 'white';
+  var lifePoints = "      " + playerObj[playerId].health + "/5";
+  context.font = "24px Georgia";
+  context.fillText(lifePoints, 70, 630, 100, 30);
+
+  //draw your score
+  context.beginPath();
+  context.rect(190, 635, 200, 30);
+  context.fillStyle = 'blue';
+  var scoreString = "SCORE: " + playerObj[playerId].score;
+  context.font = "30px Georgia";
+  context.fillText(scoreString, 190, 635, 200, 30);
+
+  //draw current high score
+  context.beginPath();
+  context.rect(390, 635, 200, 30);
+  context.fillStyle = 'blue';
+  var highScoreString = "HIGH SCORE: " + highScores[1].score;
+  context.font = "30px Georgia";
+  context.fillText(highScoreString, 390, 635, 200, 30);
+}
+
 var playerRect = {
   charNum: 0,
+  name: "Player One",
   startX: 10,
   startY: 10,
   x: 10,
@@ -310,46 +401,46 @@ var playerRect = {
 ***************************************************************/
 
 //handles animation of the square/s
-function animate(myRectangle, canvas, context, direction, startY, startX) {
-	  update();
-      var time = (new Date()).getTime()  - start;
+// function animate(myRectangle, canvas, context, direction, startY, startX) {
+// 	  update();
+//       var time = (new Date()).getTime()  - start;
 
-      var linearSpeed = 100;
+//       var linearSpeed = 100;
 
-  		if(myRectangle.facing == 'left') {
-  			var newX = -1*(linearSpeed * time / 1000) + startX;
-  			newY = myRectangle.y;
-  		}
+//   		if(myRectangle.facing == 'left') {
+//   			var newX = -1*(linearSpeed * time / 1000) + startX;
+//   			newY = myRectangle.y;
+//   		}
 
-  		else if(direction == 'right') {
-  			var newX = (linearSpeed * time / 1000) + startX;
-  			newY = myRectangle.y;
-  		}
+//   		else if(direction == 'right') {
+//   			var newX = (linearSpeed * time / 1000) + startX;
+//   			newY = myRectangle.y;
+//   		}
 
-  		else if(direction == 'up') {
-  			var newY = -1*(linearSpeed * time / 1000) + startY;
-  			newX = myRectangle.x;
-  		}
+//   		else if(direction == 'up') {
+//   			var newY = -1*(linearSpeed * time / 1000) + startY;
+//   			newX = myRectangle.x;
+//   		}
 
-  		else if(direction == 'down') {
-  			var newY = (linearSpeed * time / 1000) + startY;
-  			newX = myRectangle.x;
-  		}
+//   		else if(direction == 'down') {
+//   			var newY = (linearSpeed * time / 1000) + startY;
+//   			newX = myRectangle.x;
+//   		}
 
-  		if((newX < canvas.width - myRectangle.width && newX >= 0)) {
-  			myRectangle.x = newX;
-  			myRectangle.y = newY;
-  		}
+//   		if((newX < canvas.width - myRectangle.width && newX >= 0)) {
+//   			myRectangle.x = newX;
+//   			myRectangle.y = newY;
+//   		}
 
-  		// clears old square from screen
-  		context.clearRect(0, 0, canvas.width, canvas.height);
-  		// draws new square in new position
-  		drawRect(myRectangle, context);
+//   		// clears old square from screen
+//   		context.clearRect(0, 0, canvas.width, canvas.height);
+//   		// draws new square in new position
+//   		drawRect(myRectangle, context);
 
-  		requestAnimFrame( function() {
-  			animate(myRectangle, canvas, context, direction, startY, startX)
-  		});
-}
+//   		requestAnimFrame( function() {
+//   			animate(myRectangle, canvas, context, direction, startY, startX)
+//   		});
+// }
 
 /***************************************************************
 *------------------UPDATE CANVAS FROM SERVER--------------------
@@ -361,6 +452,7 @@ function drawFromServer() {
 
   //draw the grass background
   drawBack(ctx[0]);
+  drawUI(ctx[0]);
 
 	//draws the new player in its new position
   for(var i = 1; i <= 4; i++)
@@ -407,45 +499,54 @@ $(window).keydown(function(e){
     if(e.keyCode in keymap){
       keymap[e.keyCode] =  true;
 
-      if([32, 37, 38, 39, 40, 65, 68, 82, 83, 87].indexOf(e.keyCode) > -1)
+      if(document.activeElement.name != "usermsg")
       {
-        e.preventDefault();
+         if([32, 37, 38, 39, 40, 65, 68, 82, 83, 87].indexOf(e.keyCode) > -1)
+              {
+                e.preventDefault();
+              }
+
+              //If left arrow key is pressed
+              if(keymap[37] || keymap[65]){
+                //send move to server
+                sendMove(playerId, "left");
+              }
+
+              //If up arrow key is pressed
+              if(keymap[38] || keymap[87]){
+                //send move to server
+                sendMove(playerId, "up");
+              }
+
+              //If right arrow key is pressed
+              if(keymap[39] || keymap[68]){
+                //send move to server
+                sendMove(playerId, "right");
+              }
+
+              //If down arrow key is pressed
+              if(keymap[40] || keymap[83]){
+                //send move to server
+                sendMove(playerId, "down");
+              }
+
+              //if space key is pressed
+              else if(keymap[32]){
+                //send move to server
+                sendMove(playerId, "attack");
+              }
+
+              //If R key is pressed
+              else if(keymap[82]){
+                //send move to server
+                sendMove(playerId, "respawn");
+              }
       }
 
-      //If left arrow key is pressed
-      if(keymap[37] || keymap[65]){
-        //send move to server
-        sendMove(playerId, "left");
-      }
-
-      //If up arrow key is pressed
-      if(keymap[38] || keymap[87]){
-        //send move to server
-        sendMove(playerId, "up");
-      }
-
-      //If right arrow key is pressed
-      if(keymap[39] || keymap[68]){
-        //send move to server
-        sendMove(playerId, "right");
-      }
-
-      //If down arrow key is pressed
-      if(keymap[40] || keymap[83]){
-        //send move to server
-        sendMove(playerId, "down");
-      }
-
-      //if space key is pressed
-      else if(keymap[32]){
-        //send move to server
-        sendMove(playerId, "attack");
-      }
-
-      //If R key is pressed
-      else if(keymap[82]){
-        //send move to server
-        sendMove(playerId, "respawn");
+      //if enter is clicked to submit message
+      else if(keymap[13]){
+        //sendmessage to server
+        chatLog(document.getElementById("usermsg").value);
       }
     }
 	});

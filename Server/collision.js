@@ -179,7 +179,7 @@ module.exports = {
         },
 
     //projectile v. player collision
-    projCol: function projCol(bullet, playerObj)
+    projCol: function projCol(bullet, playerObj, obstObj)
         {
             //-1 is a miss
             //1,2,3,4 are hits on the respective player
@@ -279,6 +279,73 @@ module.exports = {
                         else if(bullet.y + 5 >= 600)
                         {
                             hit = 5;
+                        }
+                    }
+                }
+            }
+
+            if(hit == -1)//check projectile collision with obstructions
+            {
+                for(var i = 1; i <= 15; i++)
+                {
+                    if(obstObj[i] != null)
+                    {
+                        if(bullet.moving == "left")
+                        {
+                            if(bullet.x - 5 <= obstObj[i].x + obstObj[i].width - 1
+                                && bullet.x - 5 >= obstObj[i].x)
+                            {
+                                if(bullet.y <= obstObj[i].y + obstObj[i].height - 1
+                                    && bullet.y >= obstObj[i].y)
+                                {
+                                    hit = 5;
+                                    bullet.destroyed = 1;
+                                    break;
+                                }
+                            }
+                        }
+                        else if(bullet.moving == "right")
+                        {
+                            if(bullet.x + 5 <= obstObj[i].x + obstObj[i].width - 1
+                                && bullet.x + 5 >= obstObj[i].x)
+                            {
+                                if(bullet.y <= obstObj[i].y + obstObj[i].height - 1
+                                    && bullet.y >= obstObj[i].y)
+                                {
+                                    hit = 5;
+                                    bullet.destroyed = 1;
+                                    break;
+                                }
+                            }
+                        }
+                        else if(bullet.moveing == "up")
+                        {
+                            if(bullet.x <= obstObj[i].x + obstObj[i].width - 1
+                                && bullet.x >= obstObj[i].x)
+                            {
+                                if(bullet.y - 5 <= obstObj[i].y + obstObj[i].height - 1
+                                    && bullet.y - 5 >= obstObj[i].y)
+                                {
+                                    hit = 5;
+                                    bullet.destroyed = 1;
+                                    break;
+                                }
+                            }
+
+                        }
+                        else//bullet.moving is down
+                        {
+                            if(bullet.x <= obstObj[i].x + obstObj[i].width - 1
+                                && bullet.x >= obstObj[i].x)
+                            {
+                                if(bullet.y + 5 <= obstObj[i].y + obstObj[i].height - 1
+                                    && bullet.y + 5 >= obstObj[i].y)
+                                {
+                                    hit = 5;
+                                    bullet.destroyed = 1;
+                                    break;
+                                }
+                            }
                         }
                     }
                 }

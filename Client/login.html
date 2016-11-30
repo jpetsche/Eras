@@ -1,7 +1,26 @@
-<h1> Username: </h1>
+<body>
+<h1 style="color: white;"> Username: </h1>
 <input type="text" ng-model="username" id="user"><br><br>
-<input type="button" value="LOGIN" ng-model="loginButton" ng-click="login()" style="background-color: #4CAF50; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;">
+<input type="button" value="LOGIN" ng-model="loginButton" ng-click="login()" style="background-color: yellow; border: none; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;">
+</body>
 
 <style>
+html, body {
+    height: 100%;
+}
 
+html {
+    display: table;
+    margin: auto;
+}
+
+body {
+    display: table-cell;
+    vertical-align: middle;
+    horizontal-align: middle;
+    background-image:url(login_ui.jpg), url(login_Back.jpg);
+    background-position:center;
+    background-size: 250px 250px, 1000px 950px;
+    background-repeat: no-repeat;
+}
 </style>

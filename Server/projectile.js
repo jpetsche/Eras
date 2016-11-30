@@ -22,7 +22,7 @@ function projectile(num) {
 //module inclusion declaration for projectiles
 module.exports = {
 	shootProj: //function that creates and shoots the projectile
-		function shootProj(player, projObj) {
+		function shootProj(player, projObj, clients) {
 		    for(var i = 1; i < 100; i++)
 		    {
 		        if(projObj[i] == null)
@@ -57,15 +57,23 @@ module.exports = {
 		            break;
 		        }
 		    }
+
+		    for(var i = 1; i <= 4; i++)
+		    {
+		    	if(clients[i] != null)
+		    	{
+		    		clients[i].sendUTF("attack");
+		    	}
+		    }
 		},
 
 	updateProj: //function that updates all of the projectiles
-		function updateProj(projObj, playerObj, highScores, clients){
+		function updateProj(projObj, playerObj, highScores, clients, obstObj){
 		    for(var i = 1; i < 100; i++)
 		    {
 		        if(projObj[i] != null)
 		        {
-		            var hit = col.projCol(projObj[i], playerObj);
+		            var hit = col.projCol(projObj[i], playerObj, obstObj);
 
 		            if(projObj[i].moving == "left")
 		            {
@@ -227,6 +235,18 @@ module.exports = {
 		                    projObj[i] = null;
 		                }
 		            }
+		        }
+
+		        //send hit audio
+		        if(hit <= 5 && hit >= 1)
+		        {
+		        	for(var a = 1; a <= 4; a++)
+		        	{
+		        		if(clients[a] != null)
+		        		{
+		        			clients[a].sendUTF("hit");
+		        		}
+		        	}
 		        }
 		    }
 		}

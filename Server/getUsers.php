@@ -12,10 +12,16 @@ if($conn->connect_error) {
 	die("connection error: " . $conn->connect_error);
 }
 
-$sql = "SELECT Username FROM Accounts";
+$sql = "SELECT * FROM Accounts";
 $result = $conn->query($sql);
+$array = [];
 
-echo json_encode($result);
+while($row = $result->fetch_assoc()) {
+
+    array_push($array, $row);
+}
+
+echo json_encode($array);
 
 $conn->close();
 ?>

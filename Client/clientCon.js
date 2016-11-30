@@ -11,19 +11,28 @@ ws.onerror=function(event){
 var drawnDead = 0;
 var msg;
 var curMove;
+
 var moveObj = {
-    player:0,
-    key:0
+    player: 0,
+    key: 0
 }
 var closeObj = {
-    player:0,
-	key:"close"
+    player: 0,
+	key: "close"
+}
+
+var chatObj = {
+    key: "chat",
+    msg: "",
+    user: ""
 }
 
 //send message to our web socket server
-function sendMessage(){
-    var message = document.getElementById('message').value;
-    ws.send(JSON.stringify(message));
+function sendMessage(message, username){
+    chatObj.key = "chat";
+    chatObj.msg = message;
+    chatObj.user = username;
+    ws.send(JSON.stringify(chatObj));
 }
 
 //send movement to server
@@ -60,7 +69,7 @@ ws.addEventListener("message", function(e) {
     msg = e.data;
 
     //check if the message is which player you are
-    if (msg == 1 || msg == 2 || msg == 3 || msg == 0)
+    if (msg == 1 || msg == 2 || msg == 3 || msg == 4 || msg == 0)
     {
         playerId = msg;
 
@@ -68,6 +77,14 @@ ws.addEventListener("message", function(e) {
     else if(msg == "connected")
     {
         window.alert("connected");
+    }
+    else if(msg == "attack")
+    {
+        playAttack();
+    }
+    else if(msg == "hit")
+    {
+        playHit();
     }
     else
     {
@@ -99,12 +116,20 @@ ws.addEventListener("message", function(e) {
         }
         else if(msg[0] == "obstructions")
         {
-            console.log(msg);
             for(var i = 1; i <= 15; i++)
             {
                 obstObj[i] = msg[i];
             }
             drawFromServer();
+        }
+        else if(msg[0] == "chatLog")
+        {
+            console.log(msg);
+            for(var i = 1; i <= 51; i++)
+            {
+                chatObj[i] = msg[i];
+            }
+            writeLog(chatObj);
         }
     }
 });

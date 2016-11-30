@@ -125,7 +125,7 @@ ws.addEventListener("message", function(e) {
         else if(msg[0] == "chatLog")
         {
             console.log(msg);
-            for(var i = 1; i <= 51; i++)
+            for(var i = 1; i <= 101; i++)
             {
                 chatObj[i] = msg[i];
             }

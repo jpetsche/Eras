@@ -9,7 +9,7 @@ module.exports = {
 	update: function updateChatLog(msgObj, chatObj)
 		{
 			//incremenet what the most used log is
-			if(mostRecent < 51)
+			if(mostRecent < 101)
 			{
 				mostRecent++;
 			}

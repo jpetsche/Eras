@@ -11,22 +11,60 @@ $(function() {
 var keymap = {32: false, 37: false, 38: false, 39: false, 40: false,
   65: false, 68: false, 82: false, 83: false, 87: false, 13: false};
 
+/***************************************************
+*--------------loads HTML Attributes----------------
+***************************************************/
+//game canvas
+var canvas = document.getElementById("gameBorder");
+
+/***************************************************
+*-------------------loads images--------------------
+***************************************************/
+var walkleft1 = new Image();//warrior walk left sprite
+walkleft1.src = "images/sprites/walk-left-1.png";
+var walkright1 = new Image();//warrior walk right sprite
+walkright1.src = "images/sprites/walk-right-1.png";
+var walkup1 = new Image();//warrior walk up sprite
+walkup1.src = "images/sprites/walk-up-1.png";
+var walkdown1 = new Image();//warrior walk down sprite
+walkdown1.src = "images/sprites/walk-down-1.png";
+var attackleft5 = new Image();//warrior attack left sprite
+attackleft5.src = "images/sprites/attack-left-5.png";
+var attackright5 = new Image();//warrior attack right sprite
+attackright5.src = "images/sprites/attack-right-5.png";
+var attackup5 = new Image();//warrior attack up sprite
+attackup5.src = "images/sprites/attack-up-5.png";
+var attackdown5 = new Image();//warrior attack down sprite
+attackdown5.src = "images/sprites/attack-down-5.png";
+var die6 = new Image();//warrior dead sprite
+die6.src = "images/sprites/die-6.png";
+var expl = new Image();//fireball
+expl.src = "images/expl_02_0015.png";
+var boulder = new Image();//boulder obstruction
+boulder.src = "images/boulder.png";
+var grass = new Image();//grass background
+grass.src = "images/grass.png"
+var gameover = new Image();//GAME OVER image
+gameover.src = "images/gameover.png"
+
+/***************************************************
+*-------------------loads sounds--------------------
+***************************************************/
+var shootfireball = new Audio("audio/shootfireball1.wav");//audio, shoot fireball
+var fireballhit = new Audio("audio/fireballhit1.wav");//audio, fireball explodes
+
+/***************************************************
+*-------------Game Objects and Arrays---------------
+***************************************************/
 var numPlayers = 0;
 var playerObj = {};
 var playerId;
 var projObj = {};
 var obstObj = {};
 var chatObj = {};
-
-var canvas = document.getElementById("gameBorder");
 var ctx = {};
+
 ctx[0] = canvas.getContext("2d");
-//var grass = document.getElementById("grass");
-var grass = new Image();
-grass.src = "images/grass.png"
-var gameover = new Image();
-gameover.src = "images/gameover.png"
-var move = true;
 var start;
 var keyDown = false;
 
@@ -457,8 +495,39 @@ function keypress(move)
 function stopkey()
 {
   clearInterval(timer);
-  pressed = 0;
+  if(isleft == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "left");}, 30);
+  }
+  else if(isright == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "right");}, 30);
+  }
+  else if(isup == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "up");}, 30);
+  }
+  else if(isdown == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "down");}, 30);
+  }
+  else if(isspace == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "attack");}, 30);
+  }
+  else
+  {
+    pressed = 0;
+  }
+  
 }
+
+//is down variables for directional keys
+var isleft = 0;
+var isright = 0;
+var isup = 0;
+var isdown = 0;
+var isspace = 0;
 
 $(window).keydown(function(e){
     if(e.keyCode in keymap){
@@ -473,26 +542,31 @@ $(window).keydown(function(e){
               //If left arrow key is pressed
               if(keymap[37] || keymap[65]){
                 keypress("left");
+                isleft = 1;
               }
 
               //If up arrow key is pressed
               else if(keymap[38] || keymap[87]){
                 keypress("up");
+                isup = 1;
               }
 
               //If right arrow key is pressed
               else if(keymap[39] || keymap[68]){
                 keypress("right");
+                isright = 1;
               }
 
               //If down arrow key is pressed
               else if(keymap[40] || keymap[83]){
                 keypress("down");
+                isdown = 1;
               }
 
               //if space key is pressed
               else if(keymap[32]){
                 keypress("attack");
+                isspace = 1;
               }
 
               //If R key is pressed
@@ -514,6 +588,26 @@ $(window).keyup(function(e){
       keymap[e.keyCode] = false;
       if(document.activeElement.name != "usermsg")
       {
+        if(keymap[37] || keymap[65])
+        {
+          isleft = 0;
+        }
+        else if(keymap[38] || keymap[87])
+        {
+          isup = 0;
+        }
+        else if(keymap[39] || keymap[68])
+        {
+          isright = 0;
+        }
+        else if(keymap[40] || keymap[83])
+        {
+          isdown = 0;
+        }
+        else if(keymap[32])
+        {
+          isspace = 0;
+        }
         stopkey();
       }
     }

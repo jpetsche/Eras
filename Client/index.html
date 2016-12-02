@@ -1,66 +1,16 @@
 <html>
 <head>
-    <title>Eras</title>
-
-    <h1 id="title">Eras</h1>
-
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
-    </script>
-
-    <link rel="stylesheet" type="text/css" href="game.css">
-    
+<script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+<script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-route.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="app.js"></script>
 </head>
-<body>
 
-    <script src="images.js"></script>
-    <script src="clientCon.js"></script>
+<body bgcolor="black">
 
-    <div class='container'>
-        <img id="leftImage" src="images/cropped-left-ancient-warriors-4.jpg" 
-        alt="left picture" style="width:350px;height:650px;">
-
-        <canvas id="gameBorder" width="800" height="650"></canvas>
-
-        <!-- <img id="rightImage" src="images/cropped-right-ancient-warriors-4.jpg" 
-        alt="right picture" style="width:350px;height:600px;"> -->
-
-        <div id="wrapper">
-            <div id="menu">
-                <p class="welcome">Welcome, player!</p>
-                <div style="clear:both"></div>
-            </div>
-            <div id="chatbox">
-                <p id="log20"></p>
-                <p id="log19"></p>
-                <p id="log18"></p>
-                <p id="log17"></p>
-                <p id="log16"></p>
-                <p id="log15"></p>
-                <p id="log14"></p>
-                <p id="log13"></p>
-                <p id="log12"></p>
-                <p id="log11"></p>
-                <p id="log10"></p>
-                <p id="log9"></p>
-                <p id="log8"></p>
-                <p id="log7"></p>
-                <p id="log6"></p>
-                <p id="log5"></p>
-                <p id="log4"></p>
-                <p id="log3"></p>
-                <p id="log2"></p>
-                <p id="log1"></p>
-            </div>
-
-            <form name="message" action="">
-                <input name="usermsg" type="text" id="usermsg" size="63" />
-                <input name="submitmsg" type="button" id="submitmsg" value="Send" />
-            </form>
-        </div>
-
-    </div>
-
-    <script src="gameCanvas.js"></script>
+<div ng-app="main">
+<div ng-view="#/"></div>
+</div>
 
 </body>
 </html>

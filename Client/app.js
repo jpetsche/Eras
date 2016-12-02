@@ -7,7 +7,7 @@ app.config(function($routeProvider) {
 		controller: "loginController"
     })
     $routeProvider.when("/game",{
-		templateUrl: "test.html"
+		templateUrl: "gameCanvas.html"
 	})
 });
 

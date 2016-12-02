@@ -495,7 +495,23 @@ function keypress(move)
 function stopkey()
 {
   clearInterval(timer);
-  if(isleft == 1)
+  if(isleft == 1 && isup == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "upleft");}, 30);
+  }
+  else if(isright == 1 && isup == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "upright");}, 30);
+  }
+  else if(isleft == 1 && isdown == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "downleft");}, 30);
+  }
+  else if(isright == 1 && isdown == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "downright");}, 30);
+  }
+  else if(isleft == 1)
   {
     timer = setInterval(function() { sendMove(playerId, "left");}, 30);
   }
@@ -538,9 +554,41 @@ $(window).keydown(function(e){
               {
                 e.preventDefault();
               }
+              
+              //if up-left are both pressed
+              if((keymap[37] || keymap[65]) && (keymap[38] || keymap[87]))
+              {
+                keypress("upleft");
+                isup = 1;
+                isleft = 1;
+              }
+
+              //if up-right are both pressed
+              else if((keymap[39] || keymap[68]) && (keymap[38] || keymap[87]))
+              {
+                keypress("upright");
+                isup = 1;
+                isright = 1;
+              }
+
+              //if down-left are both pressed
+              else if((keymap[37] || keymap[65]) && (keymap[40] || keymap[83]))
+              {
+                keypress("downleft");
+                isdown = 1;
+                isleft = 1;
+              }
+
+              //if down-right are both pressed
+              else if((keymap[39] || keymap[68]) && (keymap[40] || keymap[83]))
+              {
+                keypress("downright");
+                isdown = 1;
+                isright = 1;
+              }
 
               //If left arrow key is pressed
-              if(keymap[37] || keymap[65]){
+              else if(keymap[37] || keymap[65]){
                 keypress("left");
                 isleft = 1;
               }
@@ -588,23 +636,23 @@ $(window).keyup(function(e){
       keymap[e.keyCode] = false;
       if(document.activeElement.name != "usermsg")
       {
-        if(keymap[37] || keymap[65])
+        if(e.keyCode == 37 || e.keyCode == 65)
         {
           isleft = 0;
         }
-        else if(keymap[38] || keymap[87])
+        else if(e.keyCode == 38 || e.keyCode == 87)
         {
           isup = 0;
         }
-        else if(keymap[39] || keymap[68])
+        else if(e.keyCode == 39 || e.keyCode == 68)
         {
           isright = 0;
         }
-        else if(keymap[40] || keymap[83])
+        else if(e.keyCode == 40 || e.keyCode == 83)
         {
           isdown = 0;
         }
-        else if(keymap[32])
+        else if(e.keyCode == 32)
         {
           isspace = 0;
         }

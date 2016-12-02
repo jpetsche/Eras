@@ -74,77 +74,25 @@ highScores[1] = high1;
 highScores[2] = high2;
 highScores[3] = high3;
 
-//character object for each client
-var player1 = {
-    charNum:1,
-    name: "Player One",
-    startX: 10,
-    startY: 10,
-    x:10,
-    y:10,
-    width:50,
-    height:50,
-    facing: "right",
-    maxHealth: 5,
-    health: 5,
-    attack: 0,
-    canAttack: 0,
-    attackFrame: 0,
-    score: 0
-}
-
-var player2 = {
-    charNum:2,
-    name: "Player Two",
-    startX: 740,
-    startY: 10,
-    x:740,
-    y:10,
-    width:50,
-    height:50,
-    facing: "left",
-    maxHealth: 5,
-    health: 5,
-    attack: 0,
-    canAttack: 0,
-    attackFrame: 0,
-    score: 0
-}
-
-var player3 = {
-    charNum:3,
-    name: "Player Three",
-    startX: 10,
-    startY: 540,
-    x:10,
-    y:540,
-    width:50,
-    height:50,
-    facing: "right",
-    maxHealth: 5,
-    health: 5,
-    attack: 0,
-    canAttack: 0,
-    attackFrame: 0,
-    score: 0
-}
-
-var player4 = {
-    charNum:4,
-    name: "Player Four",
-    startX: 740,
-    startY: 540,
-    x:740,
-    y:540,
-    width:50,
-    height:50,
-    facing: "left",
-    maxHealth: 5,
-    health: 5,
-    attack: 0,
-    canAttack: 0,
-    attackFrame: 0,
-    score: 0
+//function to create player objects
+function player()
+{
+    this.x = 10;
+    this.y = 10;
+    this.charNum = 1;
+    this.lobbyNum = 1;
+    this.name = "Player One";
+    this.startX = 10;
+    this.startY = 10;
+    this.width = 50;
+    this.height = 50;
+    this.facing = "right";
+    this.maxHealth = 5;
+    this.health = 5;
+    this.attack = 0;
+    this.canAttack = 0;
+    this.attackFrame = 0;
+    this.score = 0;
 }
 
 //movement object to be sent to clients
@@ -215,24 +163,57 @@ wsServer.on('request', function(r){
         {
             if(playerObj[i] == null)
             {
+                var playerChar = new player();
                 if(i == 1)
                 {
-                    playerObj[i] = player1;
+                    playerObj[i] = playerChar;
+                    playerObj[i].x = 10;
+                    playerObj[i].y = 10;
+                    playerObj[i].charNum = 1;
+                    playerObj[i].lobbyNum = 1;
+                    playerObj[i].name = "Player One";
+                    playerObj[i].startX = 10;
+                    playerObj[i].startY = 10;
+                    playerObj[i].facing ="right";
                     clients[i] = connection;
                 }
                 else if(i == 2)
                 {
-                    playerObj[i] = player2;
+                    playerObj[i] = playerChar;
+                    playerObj[i].x = 740;
+                    playerObj[i].y = 10;
+                    playerObj[i].charNum = 2;
+                    playerObj[i].lobbyNum = 1;
+                    playerObj[i].name = "Player Two";
+                    playerObj[i].startX = 740;
+                    playerObj[i].startY = 10;
+                    playerObj[i].facing ="left";
                     clients[i] = connection;
                 }
                 else if(i == 3)
                 {
-                    playerObj[i] = player3;
+                    playerObj[i] = playerChar;
+                    playerObj[i].x = 10;
+                    playerObj[i].y = 540;
+                    playerObj[i].charNum = 3;
+                    playerObj[i].lobbyNum = 1;
+                    playerObj[i].name = "Player Three";
+                    playerObj[i].startX = 10;
+                    playerObj[i].startY = 540;
+                    playerObj[i].facing ="right";
                     clients[i] = connection;
                 }
                 else
                 {
-                    playerObj[i] = player4;
+                    playerObj[i] = playerChar;
+                    playerObj[i].x = 740;
+                    playerObj[i].y = 540;
+                    playerObj[i].charNum = 4;
+                    playerObj[i].lobbyNum = 1;
+                    playerObj[i].name = "Player Four";
+                    playerObj[i].startX = 740;
+                    playerObj[i].startY = 540;
+                    playerObj[i].facing ="left";
                     clients[i] = connection;
                 }
                 connection.sendUTF("connected");
@@ -256,7 +237,16 @@ wsServer.on('request', function(r){
         //log message to show that we have a new client connected
         console.log((new Date()) + ' Connection accepted, client count: ' + count);
 
-    }else{
+    }
+    // else if(count <= 7)
+    // {
+    //     //accept the connection
+    //     connection = r.accept('echo-protocol', r.origin);
+    //     //specific id for this client and increment count
+    //     count++;
+    // }
+    else
+    {
         //reject the connection, already four clients connected
         console.log((new Date()) + ' Connection rejected, too many clients');
         var badCon = r.accept('echo-protocol', r.origin);
@@ -305,7 +295,9 @@ wsServer.on('request', function(r){
                     }
                 }
             }
-            //checks if movemnt request was sent
+            /************************************
+            *---------Handle Movements-----------
+            ************************************/
             else if(msgData.key == "left" && playerObj[msgData.player].health > 0)
             {
                 playerObj[msgData.player].attack = 0;
@@ -357,6 +349,95 @@ wsServer.on('request', function(r){
                     playerObj[msgData.player].y = playerObj[msgData.player].y + 1;
                 }
                 playerObj[msgData.player].facing = msgData.key;
+            }
+            else if(msgData.key == "upleft" && playerObj[msgData.player].health > 0)
+            {
+                playerObj[msgData.player].attack = 0;
+                //check for collisions before making the move
+                hitWall = col.wallCollision(playerObj[msgData.player], "up", obstObj);
+                if(hitWall == 0)
+                {
+                    hitWall = col.wallCollision(playerObj[msgData.player], "left", obstObj);
+                }
+                hitPlayer = col.playerCollision(playerObj[msgData.player], "up", playerObj);
+                if(hitPlayer == 0)
+                {
+                    hitPlayer = col.playerCollision(playerObj[msgData.player], "left", playerObj);
+                }
+
+                if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
+                {
+                    playerObj[msgData.player].x = playerObj[msgData.player].x - 1;
+                    playerObj[msgData.player].y = playerObj[msgData.player].y - 1;
+                }
+                playerObj[msgData.player].facing = "up";
+            }
+            else if(msgData.key == "downleft" && playerObj[msgData.player].health > 0)
+            {
+                playerObj[msgData.player].attack = 0;
+                //check for collisions before making the move
+                hitWall = col.wallCollision(playerObj[msgData.player], "down", obstObj);
+                if(hitWall == 0)
+                {
+                    hitWall = col.wallCollision(playerObj[msgData.player], "left", obstObj);
+                }
+                hitPlayer = col.playerCollision(playerObj[msgData.player], "down", playerObj);
+                if(hitPlayer == 0)
+                {
+                    hitPlayer = col.playerCollision(playerObj[msgData.player], "left", playerObj);
+                }
+
+                if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
+                {
+                    playerObj[msgData.player].x = playerObj[msgData.player].x - 1;
+                    playerObj[msgData.player].y = playerObj[msgData.player].y + 1;
+
+                }
+                playerObj[msgData.player].facing = "down";
+            }
+            else if(msgData.key == "upright" && playerObj[msgData.player].health > 0)
+            {
+                playerObj[msgData.player].attack = 0;
+                //check for collisions before making the move
+                hitWall = col.wallCollision(playerObj[msgData.player], "up", obstObj);
+                if(hitWall == 0)
+                {
+                    hitWall = col.wallCollision(playerObj[msgData.player], "right", obstObj);
+                }
+                hitPlayer = col.playerCollision(playerObj[msgData.player], "up", playerObj);
+                if(hitPlayer == 0)
+                {
+                    hitPlayer = col.playerCollision(playerObj[msgData.player], "right", playerObj);
+                }
+
+                if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
+                {
+                    playerObj[msgData.player].x = playerObj[msgData.player].x + 1;
+                    playerObj[msgData.player].y = playerObj[msgData.player].y - 1;
+                }
+                playerObj[msgData.player].facing = "up";
+            }
+            else if(msgData.key == "downright" && playerObj[msgData.player].health > 0)
+            {
+                playerObj[msgData.player].attack = 0;
+                //check for collisions before making the move
+                hitWall = col.wallCollision(playerObj[msgData.player], "down", obstObj);
+                if(hitWall == 0)
+                {
+                    hitWall = col.wallCollision(playerObj[msgData.player], "right", obstObj);
+                }
+                hitPlayer = col.playerCollision(playerObj[msgData.player], "down", playerObj);
+                if(hitPlayer == 0)
+                {
+                    hitPlayer = col.playerCollision(playerObj[msgData.player], "right", playerObj);
+                }
+
+                if(hitWall == 0 && hitPlayer == 0) //if no collision is detected, move
+                {
+                    playerObj[msgData.player].x = playerObj[msgData.player].x + 1;
+                    playerObj[msgData.player].y = playerObj[msgData.player].y + 1;
+                }
+                playerObj[msgData.player].facing = "down";
             }
 			else if(msgData.key == "close")
 			{

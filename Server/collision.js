@@ -51,8 +51,8 @@ module.exports = {
                     if(object.x - 1 <= obstObj[i].x + obstObj[i].width - 1
                         && object.x - 1 >= obstObj[i].x)
                     {
-                        if(object.y <= obstObj[i].y + obstObj[i].height - 1
-                            && object.y >= obstObj[i].y)
+                        if(object.y + 25 <= obstObj[i].y + obstObj[i].height - 1
+                            && object.y + 25 >= obstObj[i].y)
                         {
                             hit = 1;
                         }
@@ -63,8 +63,8 @@ module.exports = {
                     if(object.x + 50 >= obstObj[i].x
                         && object.x + 50 <= obstObj[i].x + obstObj[i].width - 1)
                     {
-                        if(object.y <= obstObj[i].y + obstObj[i].height - 1
-                            && object.y >= obstObj[i].y)
+                        if(object.y + 25 <= obstObj[i].y + obstObj[i].height - 1
+                            && object.y + 25 >= obstObj[i].y)
                         {
                             hit = 1;
                         }
@@ -75,8 +75,8 @@ module.exports = {
                     if(object.y - 1 <= obstObj[i].y + obstObj[i].height - 1
                         && object.y - 1 >= obstObj[i].y)
                     {
-                        if(object.x <= obstObj[i].x + obstObj[i].width - 1
-                            && object.x >= obstObj[i].x)
+                        if(object.x + 25 <= obstObj[i].x + obstObj[i].width - 1
+                            && object.x + 25 >= obstObj[i].x)
                         {
                             hit = 1;
                         }
@@ -87,8 +87,8 @@ module.exports = {
                     if(object.y + 50 >= obstObj[i].y
                         && object.y + 50 <= obstObj[i].y + obstObj[i].height - 1)
                     {
-                        if(object.x <= obstObj[i].x + obstObj[i].width - 1
-                            && object.x >= obstObj[i].x)
+                        if(object.x + 25 <= obstObj[i].x + obstObj[i].width - 1
+                            && object.x + 25 >= obstObj[i].x)
                         {
                             hit = 1;
                         }
@@ -354,33 +354,23 @@ module.exports = {
         },
 
     //item v. player collision detection
-    itemCollision: function itemCollision(object, item){
-          var hit = 0;
-          var itemX = item.getX();
-          var itemY = item.getY();
-          var itemSize = item.getSize()-1;
+    itemCollision: function itemCollision(object, itemObj){
+        var hitItem = 0;
+        var playerX = object.x;
+        var playerY = object.y;
 
-          if(object.facing == "left"){
-            if(object.x -1 <= itemX + itemSize
-                && object.x -1 >= itemX){
-
+          for(var i = 1; i <= 11; i++)
+          {
+            if(itemObj[i] != null)
+            {
+              if(playerX + 25 >= itemObj[i].x && playerX + 25 <= itemObj[i].x + itemObj[i].width){
+                if(playerY + 25 >= itemObj[i].y && playerY + 25 <= itemObj[i].y + itemObj[i].height){
+                  hitItem = i;
+                  break;
+                }
+              }
             }
           }
-
-          else if(object.facing == "right"){
-            if(object.x +50 <= itemX + itemSize
-                && object.x +50 >= itemX){
-
-            }
-          }
-
-          else if(object.facing == "up"){
-
-
-          }
-
-          else {
-
-          }
-        }
-}
+          return hitItem;
+    }
+  }

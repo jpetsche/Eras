@@ -27,6 +27,16 @@ var grass = new Image();//grass background
 grass.src = "images/grass.png"
 var gameover = new Image();//GAME OVER image
 gameover.src = "images/gameover.png"
+var speed = new Image();//Speed potion image
+speed.src = "images/speed.png"
+var healing = new Image();//Healing potion image
+healing.src = "images/healing.png"
+var atkSpeed = new Image();//atkSpeed potion image
+atkSpeed.src = "images/atkSpeed.png"
+var atkStrength = new Image(); //atkStrength postion image
+atkStrength.src = "images/atkStrength.png"
+var armor = new Image(); //armor immage
+armor.src = "images/armor.png"
 
 /***************************************************
 *-------------------loads sounds--------------------

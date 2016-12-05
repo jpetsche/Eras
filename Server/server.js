@@ -6,6 +6,7 @@ var obst = require('./obstruction.js');
 var pro = require('./projectile.js');
 var sc = require('./scores.js');
 var chat = require('./chat.js');
+var items = require('./item.js');
 /***************************************************************
 *---------------------INITIALIZE SERVER-------------------------
 ***************************************************************/
@@ -14,7 +15,7 @@ var chat = require('./chat.js');
 var http = require('http');
 var server = http.createServer(function(request, response) {});
 server.listen(5000, function() {
-    console.log((new Date()) + ' Server is listening on port 5000');
+    console.log((new Date()) + ' Server 1 is listening on port 5000');
 });
 
 //Create Web Socket Server
@@ -43,6 +44,7 @@ highScores[0] = "highScores";
 obstObj[0] = "obstructions";
 var gameTimer = 0;
 obst.populateObstructions(obstObj);
+items.spawnItems(itemObj);
 
 //object to send through websockets so we are able
 //to tell the difference between the player array,
@@ -93,6 +95,8 @@ function player()
     this.canAttack = 0;
     this.attackFrame = 0;
     this.score = 0;
+    this.hasItem = 0;
+    this.heldItem = itemObj[0];
 }
 
 //movement object to be sent to clients
@@ -118,6 +122,7 @@ function playerRespawn(object){
     object.facing = "left";
   }
 }
+
 
 //timed method call that updates projectiles every 1/10th of a second
 setInterval(function(){
@@ -216,7 +221,7 @@ wsServer.on('request', function(r){
                     playerObj[i].facing ="left";
                     clients[i] = connection;
                 }
-                connection.sendUTF("connected");
+                //connection.sendUTF("connected");
                 connection.sendUTF(i);
                 break;
             }
@@ -230,6 +235,7 @@ wsServer.on('request', function(r){
                 clients[i].sendUTF(JSON.stringify(projObj));
                 clients[i].sendUTF(JSON.stringify(highScores));
                 clients[i].sendUTF(JSON.stringify(obstObj));
+                clients[i].sendUTF(JSON.stringify(itemObj));
                 clients[i].sendUTF(JSON.stringify(chatObj));
             }
         }
@@ -261,7 +267,8 @@ wsServer.on('request', function(r){
         if (msgData == 1 || msgData == 2 || msgData == 3 || msgData == 4)
         {
             console.log((new Date()) + ' Message recieved ' + msgData);
-        }//then check if it was a movement
+        }
+		//then check if it was a movement
         else if(msgData == "update")
         {
             for(var i = 1; i <= 4; i++)
@@ -278,8 +285,19 @@ wsServer.on('request', function(r){
             var hitPlayer = 0;
             msgData = JSON.parse(msgData);
 
+			//check if a username is being sent
+			if (msgData.key == "name")
+			{
+				playerObj[msgData.id].name = msgData.name;
+			}
+			//checks for highscore update
+			else if(msgData.key == "scores") {
+				highScores[1] = { score : msgData.score1, name : msgData.name1};
+				highScores[2] = { score : msgData.score2, name : msgData.name2};
+				highScores[3] = { score : msgData.score3, name : msgData.name3};
+			}
             //checks if respawn request was sent
-            if(msgData.key == "respawn" && playerObj[msgData.player].health < 1){
+            else if(msgData.key == "respawn" && playerObj[msgData.player].health < 1){
               playerRespawn(playerObj[msgData.player]);
             }
             //checks if chat message was sent
@@ -457,8 +475,100 @@ wsServer.on('request', function(r){
                     pro.shootProj(playerObj[msgData.player], projObj, clients);
                 }
             }
-            else if(msgData.key == "equip" && playerObj[msgData.player].health > 0){
-              //place holder for equiping an item
+            else if(msgData.key == "equip" && playerObj[msgData.player].health > 0)
+            {
+                //equip an item without holding an item
+                if(playerObj[msgData.player].hasItem == 0){
+                  hitItem = col.itemCollision(playerObj[msgData.player], itemObj);
+                  if(hitItem != 0)
+                  {
+                    playerObj[msgData.player].hasItem = 1;
+                    playerObj[msgData.player].heldItem = itemObj[hitItem];
+                    itemObj[hitItem].held = 1;
+                    itemObj[hitItem].x = -50;
+                    itemObj[hitItem].y = -50;
+                  }
+
+                }
+                //equip an item and drop currently held item
+                else{
+                  hitItem = col.itemCollision(playerObj[msgData.player], itemObj);
+                  if(hitItem != 0)
+                  {
+                    var tempX = itemObj[hitItem].x;
+                    var tempY = itemObj[hitItem].y;
+                    var dropped = playerObj[msgData.player].heldItem;
+                    playerObj[msgData.player].heldItem = itemObj[hitItem];
+                    playerObj[msgData.player].health = playerObj[msgData.player].health - dropped.durability;
+                    itemObj[hitItem].held = 1;
+                    itemObj[hitItem].x = -50;
+                    itemObj[hitItem].y = -50;
+
+                    for(var i = 1; i <= 11; i++)
+                    {
+                      if(itemObj[i] == dropped)
+                      {
+                        itemObj[i].x = tempX;
+                        itemObj[i].y = tempY;
+                        itemObj[i].held = 0;
+                        break;
+                      }
+                    }
+                  }
+                  //to drop a held item
+                  else if(hitItem == 0){
+                    var newX = playerObj[msgData.player].x + 25;
+                    var newY = playerObj[msgData.player].y + 25;
+                    var dropped = playerObj[msgData.player].heldItem;
+                    playerObj[msgData.player].heldItem = itemObj[0];
+                    playerObj[msgData.player].hasItem = 0;
+                    playerObj[msgData.player].health = playerObj[msgData.player].health - dropped.durability;
+                    for(var i = 1; i <= 11; i++)
+                    {
+                      if(itemObj[i] == dropped)
+                      {
+                        itemObj[i].x = newX;
+                        itemObj[i].y = newY;
+                        itemObj[i].held = 0;
+                        break;
+                      }
+                    }
+                  }
+                }
+
+                if(playerObj[msgData.player].hasItem == 1)
+                {
+                  var tempItem = playerObj[msgData.player].heldItem;
+                  if(tempItem.durability != 0)
+                  {
+                    if(tempItem.type == "speed"){
+                      //place holder for movement speed
+                    }
+                    else if(tempItem.type == "healing"){
+                      if(playerObj[msgData.player].health != playerObj[msgData.player].maxHealth){
+                        playerObj[msgData.player].health = playerObj[msgData.player].maxHealth;
+                        tempItem.durability = 0;
+                      }
+                    }
+                    else if(tempItem.type == "atkSpeed"){
+                      //place holder for attack speed
+                    }
+                    else if(tempItem.type == "atkStrength"){
+                      //place holder for attack strength
+                    }
+                    else if(tempItem.type == "armor"){
+                      playerObj[msgData.player].health = playerObj[msgData.player].health + tempItem.durability;
+                    }
+                  }
+                }
+
+                for(var i = 1; i <= 4; i++)
+                {
+                    if(clients[i] != null)
+                    {
+                        clients[i].sendUTF(JSON.stringify(itemObj));
+                    }
+                }
             }
             else
             {
@@ -486,11 +596,3 @@ wsServer.on('request', function(r){
     });
 
 });
-
-/***************************************************************
-*--------------------Get data from database------------------------
-***************************************************************/
-
-function getUsers() {
-
-}

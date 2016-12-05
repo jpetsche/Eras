@@ -1,11 +1,22 @@
 /***************************************************************
 *-------------------SETUP SERVER CONNECTION---------------------
 ***************************************************************/
-
+var serverNumber = 0;
 //initiate the web socket connection
 var ws = new WebSocket('ws://proj-309-gp-05.cs.iastate.edu:5000', 'echo-protocol');
+serverNumber = 1;
 ws.onerror=function(event){
 	window.alert("Error, could not connect");
+    //connectS2();
+}
+
+function connectS2()
+{
+    var ws = new WebSocket('ws://proj-309-gp-05.cs.iastate.edu:5001', 'echo-protocol');
+    serverNumber = 2;
+    ws.onerror=function(event){
+        window.alert("Error, could not connet to server 1 or server 2.");
+    }
 }
 
 var drawnDead = 0;
@@ -27,6 +38,22 @@ var chatObj = {
     user: ""
 }
 
+// updates highscores from db
+function updateHighscores() {
+	var highScores = {};
+     $.ajax({
+        url: "highscores.php",
+        type: 'get',
+        dataType: 'html',
+        async: false,
+        success: function(data) {
+			var scores = JSON.parse(data);
+			highScores = {"key" : "scores", "score1" : scores[0].HighScore, "name1" : scores[0].Username, "score2" : scores[1].HighScore, "name2" : scores[1].Username, "score3" : scores[2].HighScore, "name3" : scores[2].Username};
+        }
+     });
+	ws.send(JSON.stringify(highScores));
+}
+
 //send message to our web socket server
 function sendMessage(message, username){
     chatObj.key = "chat";
@@ -46,6 +73,12 @@ function sendMove(id, move){
 function sendClose(id) {
 	closeObj.player = id;
 	ws.send(JSON.stringify(closeObj));
+}
+
+//sends username to server
+function sendUser(id) {
+	var user = {"key" : "name", "name" : getUser(), "id": id};
+	ws.send(JSON.stringify(user));
 }
 
 //ask for public update
@@ -97,6 +130,13 @@ ws.addEventListener("message", function(e) {
                 highScores[i] = msg[i];
             }
         }
+		else if(msg[0] == "items"){
+			for(var i = 1; i <= 11; i++)
+            {
+				itemObj[i] = msg[i];
+			}
+			drawFromServer();
+		}
         else if(msg[0] == "players")
         {
             for(var i = 1; i <= 4; i++)
@@ -105,6 +145,7 @@ ws.addEventListener("message", function(e) {
             }
             playerRect = playerObj[playerId];
             drawFromServer();
+            updateChatName(playerObj[playerId].name);
         }
         else if(msg[0] == "projectiles")
         {
@@ -133,3 +174,19 @@ ws.addEventListener("message", function(e) {
         }
     }
 });
+
+//gets the current username of this client
+function getUser() {
+	var result = null;
+     var scriptUrl = "username.php";
+     $.ajax({
+        url: scriptUrl,
+        type: 'get',
+        dataType: 'html',
+        async: false,
+        success: function(data) {
+            result = data;
+        }
+     });
+     return result;
+}

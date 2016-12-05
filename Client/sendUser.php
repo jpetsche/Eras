@@ -6,6 +6,7 @@ $password = "8uj6J4wwABG";
 $db = "db309gp05";
 
 $user = $_POST['newUser'];
+$score = $_POST['score'];
 
 //saves username for this session so it can be retreived by any page
 $_SESSION["user"] = $user;

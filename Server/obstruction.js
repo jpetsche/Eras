@@ -30,8 +30,8 @@ module.exports = {
 		    var amount = Math.floor((Math.random() * 15) + 5);
 		    for(var i = 1; i <= amount; i++)
 		    {
-		        //var type = Math.floor((Math.random() * 6) + 1);
-		        var type = 3; //set as boulder, just for testing
+		        var type = Math.floor((Math.random() * 5) + 1);
+		        //var type = 3; //set as boulder, just for testing
 		        var dir = 0;
 		        var width;
 		        var height;

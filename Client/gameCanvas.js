@@ -9,7 +9,7 @@ $(function() {
 
 //holds value of keyDown
 var keymap = {32: false, 37: false, 38: false, 39: false, 40: false,
-  65: false, 68: false, 82: false, 83: false, 87: false, 13: false};
+  65: false, 68: false, 69: false, 82: false, 83: false, 87: false, 13: false};
 
 /***************************************************
 *--------------loads HTML Attributes----------------
@@ -43,9 +43,29 @@ expl.src = "images/expl_02_0015.png";
 var boulder = new Image();//boulder obstruction
 boulder.src = "images/boulder.png";
 var grass = new Image();//grass background
-grass.src = "images/grass.png"
+grass.src = "images/grass.png";
 var gameover = new Image();//GAME OVER image
-gameover.src = "images/gameover.png"
+gameover.src = "images/gameover.png";
+var speed = new Image();//Speed potion image
+speed.src = "images/speed.png";
+var healing = new Image();//Healing potion image
+healing.src = "images/healing.png";
+var atkSpeed = new Image();//atkSpeed potion image
+atkSpeed.src = "images/atkSpeed.png";
+var atkStrength = new Image(); //atkStrength postion image
+atkStrength.src = "images/atkStrength.png";
+var armor = new Image(); //armor immage
+armor.src = "images/armor.png";
+var tree = new Image();//tree image
+tree.src = "images/tree.png";
+var rock = new Image();//rock image
+rock.src = "images/rock.png";
+var water = new Image();//water image
+water.src = "images/water.png";
+var mud = new Image();//mud image
+mud.src = "images/mud.png";
+var emptyBottle = new Image();
+emptyBottle.src = "images/emptyBottle.png";
 
 /***************************************************
 *-------------------loads sounds--------------------
@@ -60,6 +80,7 @@ var numPlayers = 0;
 var playerObj = {};
 var playerId;
 var projObj = {};
+var itemObj = {};
 var obstObj = {};
 var chatObj = {};
 var ctx = {};
@@ -103,6 +124,15 @@ highScores[3] = high3;
 /***************************************************************
 *----------------------Chatlog Sending--------------------------
 ***************************************************************/
+//updates the welcome message on the chat log
+function updateChatName(playerName)
+{
+  var welcMsg = "Welcome, " + playerName + "!";
+  var element;
+  element = document.getElementById("welcomeMsg");
+  element.innerHTML = welcMsg;
+}
+
 //calls the methods to send the message when the send button is clicked
 document.getElementById("submitmsg").onclick = function() {
   chatLog(document.getElementById("usermsg").value)
@@ -126,7 +156,7 @@ function writeLog(chatObj)
     if(chatObj[curMsg] != null)
     {
       element = document.getElementById("log"+count);
-      element.innerHTML = chatObj[curMsg].user + ": " + chatObj[curMsg].msg;      
+      element.innerHTML = chatObj[curMsg].user + ": " + chatObj[curMsg].msg;
     }
     else
     {
@@ -215,6 +245,47 @@ function drawObstructions(context, thing)
   }
 }
 
+function drawItems(context, item){
+  context.beginPath();
+  context.rect(item.x, item.y, item.width, item.height);
+
+  if(item.type == "speed"){
+    if(item.durability == 0){
+      context.drawImage(emptyBottle, item.x, item.y, item.width, item.height);
+    }
+    else {
+    context.drawImage(speed, item.x, item.y, item.width, item.height);
+    }
+  }
+  else if(item.type == "healing"){
+    if(item.durability == 0){
+      context.drawImage(emptyBottle, item.x, item.y, item.width, item.height);
+    }
+    else{
+      context.drawImage(healing, item.x, item.y, item.width, item.height);
+    }
+  }
+  else if(item.type == "atkSpeed"){
+    if(item.durability == 0){
+      context.drawImage(emptyBottle, item.x, item.y, item.width, item.height);
+    }
+    else{
+    context.drawImage(atkSpeed, item.x, item.y, item.width, item.height);
+    }
+  }
+  else if(item.type == "atkStrength"){
+    if(item.durability == 0){
+      context.drawImage(emptyBottle, item.x, item.y, item.width, item.height);
+    }
+    else{
+    context.drawImage(atkStrength, item.x, item.y, item.width, item.height);
+    }
+  }
+  else if(item.type == "armor"){
+    context.drawImage(armor, item.x, item.y, item.width, item.height);
+  }
+}
+
 //draw gameover image
 function drawGameOver(context)
 {
@@ -236,6 +307,13 @@ function drawGameOver(context)
   context.fillStyle = "red";
   var scoreSt = "Your score was: " + playerObj[playerId].score;
   context.fillText(scoreSt, 300, 350, 200, 100);
+
+  //update scores in database
+  $.post("updateScore.php",
+  {
+	  user: playerObj[playerId].name,
+	  score: playerObj[playerId].score
+  });
 
   //write HIGH SCORES
   context.beginPath();
@@ -288,7 +366,7 @@ function drawRect(rect, context, id){
   //figure out which direction the player is walking and load sprite accordingly
   if(rect.health <= 0)
   {
-    sprite = die6;
+		sprite = die6;
   }
   else if(rect.facing == 'left')
   {
@@ -337,9 +415,13 @@ function drawRect(rect, context, id){
 
   context.drawImage(sprite, rect.x, rect.y, rect.width, rect.height);
 
-  //now draw the health bar
-  healthBar(rect, context, id);
+	//now draw the health bar and username
+	healthBar(rect, context, id);
 
+	if(rect.health <= 0) // for dead player
+		deadUsername(rect, context, id);
+	else // for living player
+		username(rect, context, id);
 }
 
 //function for health bar
@@ -350,7 +432,14 @@ function healthBar(rect, context, id)
   context.fillStyle = 'red';
   context.fill();
   context.beginPath();
-  context.rect(rect.x, rect.y - 10, 10*rect.health, 10);
+  if(rect.health >= 5)
+  {
+    context.rect(rect.x, rect.y - 10, 50, 10);
+  }
+  else
+  {
+    context.rect(rect.x, rect.y - 10, 10*rect.health, 10);
+  }
   context.fillStyle = 'green';
   context.fill();
   context.beginPath();
@@ -362,6 +451,24 @@ function healthBar(rect, context, id)
 
 }
 
+//function for username above each player
+function username(rect, context, id)
+{
+	context.beginPath();
+	context.fillStyle = "black";
+	context.font = "bold 8px Georgia";
+	context.fillText(playerObj[id].name, rect.x, rect.y-12, 50, 10);
+}
+
+//function for username above each dead player
+function deadUsername(rect, context, id)
+{
+	context.beginPath();
+	context.fillStyle = "black";
+	context.font = "bold 8px Georgia";
+	context.fillText("RIP " + playerObj[id].name, rect.x, rect.y-12, 50, 10);
+}
+
 //function to draw the player UI at the bottom of the canvas
 function drawUI(context)
 {
@@ -370,7 +477,7 @@ function drawUI(context)
   context.rect(0, 600, 800, 50);
   context.fillStyle = 'white';
   context.fill();
-  
+
   //draw character image
   context.beginPath();
   context.rect(10, 600, 50, 50);
@@ -382,7 +489,14 @@ function drawUI(context)
   context.fillStyle = 'red';
   context.fill();
   context.beginPath();
-  context.rect(70, 610, playerObj[playerId].health*20, 30);
+  if(playerObj[playerId].health >= 5)
+  {
+    context.rect(70, 610, 100, 30);
+  }
+  else
+  {
+    context.rect(70, 610, playerObj[playerId].health*20, 30);
+  }
   context.fillStyle = 'green';
   context.fill();
   context.beginPath();
@@ -407,6 +521,14 @@ function drawUI(context)
   var highScoreString = "HIGH SCORE: " + highScores[1].score;
   context.font = "30px Georgia";
   context.fillText(highScoreString, 390, 635, 200, 30);
+
+  //draw username
+  context.beginPath();
+  context.rect(650, 635, 200, 30);
+  context.fillStyle = 'blue';
+  var name = playerObj[playerId].name;
+  context.font = "30px Georgia";
+  context.fillText(name, 650, 635, 200, 30);
 }
 
 var playerRect = {
@@ -439,16 +561,26 @@ function drawFromServer() {
   drawBack(ctx[0]);
   drawUI(ctx[0]);
 
+  //draw the items
+  for(var i = 1; i <=11; i++){
+    if(itemObj[i] != null){
+      var curItem = itemObj[i];
+      if(curItem.held == 0){
+        drawItems(ctx[0], curItem);
+      }
+    }
+  }
+
 	//draws the new player in its new position
   for(var i = 1; i <= 4; i++)
   {
     if(playerObj[i] != null)
     {
       var curPlayer = playerObj[i];
-      drawRect(curPlayer, ctx[0], playerId);
+      drawRect(curPlayer, ctx[0], i);
     }
   }
-  
+
   //draw the obstructions
   for(var i = 1; i <= 15; i++)
   {
@@ -486,8 +618,38 @@ function keypress(move)
 {
   if(pressed == 0)
   {
-    timer = setInterval(function() { sendMove(playerId, move);}, 30);
+    if(move == "equip")
+    {
+      sendMove(playerId, move);
+    }
+    else
+    {
+      timer = setInterval(function() { sendMove(playerId, move);}, 30);
+    }
     pressed = 1;
+  }
+  else if(pressed == 1)
+  {
+    if(isleft == 1 && isup == 1)
+    {
+      clearInterval(timer);
+      timer = setInterval(function() { sendMove(playerId, "upleft");}, 30);
+    }
+    else if(isright == 1 && isup == 1)
+    {
+      clearInterval(timer);
+      timer = setInterval(function() { sendMove(playerId, "upright");}, 30);
+    }
+    else if(isleft == 1 && isdown == 1)
+    {
+      clearInterval(timer);
+      timer = setInterval(function() { sendMove(playerId, "downleft");}, 30);
+    }
+    else if(isright == 1 && isdown == 1)
+    {
+      clearInterval(timer);
+      timer = setInterval(function() { sendMove(playerId, "downright");}, 30);
+    }
   }
 }
 
@@ -531,11 +693,15 @@ function stopkey()
   {
     timer = setInterval(function() { sendMove(playerId, "attack");}, 30);
   }
+  else if(isequip == 1)
+  {
+    timer = setInterval(function() { sendMove(playerId, "equip");}, 30);
+  }
   else
   {
     pressed = 0;
   }
-  
+
 }
 
 //is down variables for directional keys
@@ -544,17 +710,18 @@ var isright = 0;
 var isup = 0;
 var isdown = 0;
 var isspace = 0;
+var isequip = 0;
 
 $(window).keydown(function(e){
     if(e.keyCode in keymap){
       keymap[e.keyCode] =  true;
       if(document.activeElement.name != "usermsg")
       {
-         if([32, 37, 38, 39, 40, 65, 68, 82, 83, 87].indexOf(e.keyCode) > -1)
+         if([32, 37, 38, 39, 40, 65, 68, 69, 82, 83, 87].indexOf(e.keyCode) > -1)
               {
                 e.preventDefault();
               }
-              
+
               //if up-left are both pressed
               if((keymap[37] || keymap[65]) && (keymap[38] || keymap[87]))
               {
@@ -617,6 +784,12 @@ $(window).keydown(function(e){
                 isspace = 1;
               }
 
+              //If E key is pressed
+              else if(keymap[69]){
+                keypress("equip");
+                isequip = 1;
+              }
+
               //If R key is pressed
               else if(keymap[82]){
                 keypress("respawn");
@@ -652,6 +825,10 @@ $(window).keyup(function(e){
         {
           isdown = 0;
         }
+        else if(e.keyCode == 69)
+        {
+          isequip = 0;
+        }
         else if(e.keyCode == 32)
         {
           isspace = 0;
@@ -659,8 +836,29 @@ $(window).keyup(function(e){
         stopkey();
       }
     }
-	});
+});
 
+//when player connects send name to server
+window.onload = function() {
+  sendUser(playerId);
+  updateHighscores();
+
+  //update scores in database
+  $.post("updateScore.php",
+  {
+	  user: playerObj[playerId].name,
+	  score: playerObj[playerId].score
+  });
+};
+//before window closes send message to server that player is disconnecting
 window.addEventListener("beforeunload", function(e){
    sendClose(playerId);
+  updateHighscores();
+
+  //update scores in database
+  $.post("updateScore.php",
+  {
+	  user: playerObj[playerId].name,
+	  score: playerObj[playerId].score
+  });
 }, false);

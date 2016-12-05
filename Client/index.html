@@ -8,6 +8,15 @@
 
 <body bgcolor="black">
 
+	<audio autoplay id="runescape">
+		<source src="audio/runescapeOldTheme.mp3" type="audio/mpeg">
+	</audio>
+
+	<script>
+		var song = document.getElementById("runescape");
+		song.volume = 0.01;
+	</script>
+
 <div ng-app="main">
 <div ng-view="#/"></div>
 </div>

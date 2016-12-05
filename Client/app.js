@@ -11,11 +11,11 @@ app.config(function($routeProvider) {
 	})
 });
 
-//when the button is pressed /game is added to the url
+//when the button is pressed user is redirected to the games html
 app.controller("loginController", function($scope, $location){
 	$scope.login = function(){
 		if(submitMe())
-			$location.url("/game");
+			window.location.href = "http://proj-309-gp-05.cs.iastate.edu/gameCanvas.html";
 	}
 });
 
@@ -28,14 +28,21 @@ function submitMe() {
 	   
 	   //checks if user is a duplicate
 		for(var i = 0; i < users.length; i++) {
-			if(user == users[i].Username)
-				return false;
+			if(user == users[i].Username) {
+				$.post("setUsername.php",
+				{
+					user: user
+				});	
+				return true;
+			}
 		}
-			 
+		
+		
 		//if it isnt then username is stored
 		$.post("sendUser.php",
 		{
-			newUser: user
+			newUser: user,
+			score: "0"
 		});	
 	   return true;
 }

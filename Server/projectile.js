@@ -88,7 +88,15 @@ module.exports = {
 		                }
 		                else
 		                {
-		                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                        // if(playerObj[hit].hasItem == 1){
+                        //   var tempItem = playerObj[hit].heldItem;
+                        //   if(tempItem.type == "armor"){
+                        //   playerObj[hit].heldItem.durability = playerObj[hit].heldItem.durability - projObj[i].damage;
+                        //   }
+                        // }
+		                    //else{
+                          playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                        //}
 		                    if(playerObj[hit].health > 0)
 		                    {
 		                        if(playerObj[projObj[i].launchedBy].health > 0)
@@ -128,7 +136,15 @@ module.exports = {
 		                }
 		                else
 		                {
-		                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                        // if(playerObj[hit].hasItem == 1){
+                        //   var tempItem = playerObj[hit].heldItem;
+                        //   if(tempItem.type == "armor"){
+                        //   playerObj[hit].heldItem.durability = playerObj[hit].heldItem.durability - projObj[i].damage;
+                        //   }
+                        // }
+                        //else{
+                          playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                        //}
 		                    if(playerObj[hit].health > 0)
 		                    {
 		                        if(playerObj[projObj[i].launchedBy].health > 0)
@@ -168,7 +184,15 @@ module.exports = {
 		                }
 		                else
 		                {
-		                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                        // if(playerObj[hit].hasItem == 1){
+                        //   var tempItem = playerObj[hit].heldItem;
+                        //   if(tempItem.type == "armor"){
+                        //   playerObj[hit].heldItem.durability = playerObj[hit].heldItem.durability - projObj[i].damage;
+                        //   }
+                        // }
+                        //else{
+                          playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                      //  }
 		                    if(playerObj[hit].health > 0)
 		                    {
 		                        if(playerObj[projObj[i].launchedBy].health > 0)
@@ -208,7 +232,15 @@ module.exports = {
 		                }
 		                else
 		                {
-		                    playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                        // if(playerObj[hit].hasItem == 1){
+                        //   var tempItem = playerObj[hit].heldItem;
+                        //   if(tempItem.type == "armor"){
+                        //   playerObj[hit].heldItem.durability = playerObj[hit].heldItem.durability - projObj[i].damage;
+                        //   }
+                        // }
+                        //else{
+                          playerObj[hit].health = playerObj[hit].health - projObj[i].damage;
+                        //}
 		                    if(playerObj[hit].health > 0)
 		                    {
 		                        if(playerObj[projObj[i].launchedBy].health > 0)

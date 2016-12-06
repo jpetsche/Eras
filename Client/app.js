@@ -1,6 +1,7 @@
 var app = angular.module("main", ["ngRoute"]);
 
-//configures the ng-app "main" so that when the url has /game at the end the game is loaded onto the screen
+//configures the ng-app "main" so that when the url has /game at the end the game is loaded onto the screen 
+//Not used because when gameCanvas.html is loaded it seems like the js file wasnt loaded
 app.config(function($routeProvider) {
     $routeProvider.when("/", {
         templateUrl: "login.html",

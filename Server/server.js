@@ -499,7 +499,9 @@ wsServer.on('request', function(r){
                     var tempY = itemObj[hitItem].y;
                     var dropped = playerObj[msgData.player].heldItem;
                     playerObj[msgData.player].heldItem = itemObj[hitItem];
+                    if(dropped.type == "armor"){
                     playerObj[msgData.player].health = playerObj[msgData.player].health - dropped.durability;
+                    }
                     itemObj[hitItem].held = 1;
                     itemObj[hitItem].x = -50;
                     itemObj[hitItem].y = -50;
@@ -522,7 +524,9 @@ wsServer.on('request', function(r){
                     var dropped = playerObj[msgData.player].heldItem;
                     playerObj[msgData.player].heldItem = itemObj[0];
                     playerObj[msgData.player].hasItem = 0;
-                    playerObj[msgData.player].health = playerObj[msgData.player].health - dropped.durability;
+                    if(dropped.type == "armor"){
+                      playerObj[msgData.player].health = playerObj[msgData.player].health - dropped.durability;
+                    }
                     for(var i = 1; i <= 11; i++)
                     {
                       if(itemObj[i] == dropped)
